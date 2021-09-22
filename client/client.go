@@ -115,13 +115,11 @@ func (h *HTTPSessionManager) SearchClans(args ...map[string]string) (*clan.ClanL
 		return clanlist, fmt.Errorf("at least 1 parameter is required")
 	}
 	endpoint += params
-	fmt.Println("1")
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 
 		return clanlist, err
 	}
-	fmt.Println("2")
 	if err := json.Unmarshal(data, &clanlist); err != nil {
 		return clanlist, err
 	}
