@@ -24,12 +24,17 @@ type Player struct {
 		Name      string `json:"name"`
 		Tag       string `json:"tag"`
 	} `json:"clan"`
-	DefenseWins       int64  `json:"defenseWins"`
-	Donations         int64  `json:"donations"`
-	DonationsReceived int64  `json:"donationsReceived"`
-	ExpLevel          int64  `json:"expLevel"`
-	Heroes            []Hero `json:"heroes"`
-	League            struct {
+	DefenseWins       int64 `json:"defenseWins"`
+	Donations         int64 `json:"donations"`
+	DonationsReceived int64 `json:"donationsReceived"`
+	ExpLevel          int64 `json:"expLevel"`
+	Heroes            []struct {
+		Level    int64  `json:"level"`
+		MaxLevel int64  `json:"maxLevel"`
+		Name     string `json:"name"`
+		Village  string `json:"village"`
+	} `json:"heroes"`
+	League struct {
 		IconUrls struct {
 			Medium string `json:"medium"`
 			Small  string `json:"small"`
@@ -82,9 +87,8 @@ type Player struct {
 	Valid bool
 }
 
-type Hero struct {
-	Level    int64  `json:"level"`
-	MaxLevel int64  `json:"maxLevel"`
-	Name     string `json:"name"`
-	Village  string `json:"village"`
+type Verification struct {
+	Tag    string `json:"tag,omitempty"`
+	Token  string `json:"token,omitempty"`
+	Status string `json:"status,omitempty"`
 }

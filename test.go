@@ -28,12 +28,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	cln, err := H.GetLocationPlayersVersus("32000249")
+	cln, err := H.VerifyPlayerToken("#PGCQRC2V", "9brakbm6")
 	if err != nil {
 		panic(err)
 	}
-	for _, mem := range cln.PlayersVersus {
-		fmt.Println("data:", mem.Name, mem.ExpLevel, mem.Tag, mem.VersusTrophies)
+	for _, mem := range cln.Achievements {
+		fmt.Println("data:", mem.Name, mem.CompletionInfo)
 	}
 	t2 := time.Since(t)
 	fmt.Printf("Took %f seconds\n", t2.Seconds())
