@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"fmt"
 	"fmt"
 	"math/rand"
 	"os"
@@ -36,7 +35,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			for _, _ = range cln.Clans {
+			for range cln.Clans {
 				//fmt.Println("data:", mem.Name, mem.RequiredTownhallLevel, mem.ClanLevel, mem.RequiredTrophies)
 			}
 			t2 := time.Since(t)
