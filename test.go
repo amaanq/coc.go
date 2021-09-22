@@ -3,13 +3,13 @@ package main
 import (
 	//"fmt"
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/amaanq/coc.go/client"
+	"github.com/joho/godotenv"
 )
-
 
 func main() {
 	t := time.Now()
@@ -28,13 +28,30 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	cln, err := H.VerifyPlayerToken("#PGCQRC2V", "9brakbm6")
-	if err != nil {
-		panic(err)
+	for i := 0; i < 100000; i++ {
+		if i % 100 == 0 {
+			mp := map[string]string{"name": "the"+string(rand.Intn(90)+32)}
+			fmt.Println(mp)
+			cln, err := H.SearchClans(mp)
+			if err != nil {
+				panic(err)
+			}
+			for _, _ = range cln.Clans {
+				//fmt.Println("data:", mem.Name, mem.RequiredTownhallLevel, mem.ClanLevel, mem.RequiredTrophies)
+			}
+			t2 := time.Since(t)
+			fmt.Printf("NEW: Took %f seconds\n", t2.Seconds())
+			t = time.Now()
+		}
+		cln, err := H.SearchClans(map[string]string{"name": "gay"})
+		if err != nil {
+			panic(err)
+		}
+		for _, _ = range cln.Clans {
+			//fmt.Println("data:", mem.Name, mem.RequiredTownhallLevel, mem.ClanLevel, mem.RequiredTrophies)
+		}
+		t2 := time.Since(t)
+		fmt.Printf("Took %f seconds\n", t2.Seconds())
+		t = time.Now()
 	}
-	for _, mem := range cln.Achievements {
-		fmt.Println("data:", mem.Name, mem.CompletionInfo)
-	}
-	t2 := time.Since(t)
-	fmt.Printf("Took %f seconds\n", t2.Seconds())
 }

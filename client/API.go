@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/patrickmn/go-cache"
 )
 
 type HTTPSessionManager struct {
@@ -20,6 +21,7 @@ type HTTPSessionManager struct {
 	IP            string
 	wg            sync.WaitGroup
 	mutex         sync.RWMutex
+	cache         *cache.Cache
 }
 
 type LoginResponse struct {

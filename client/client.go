@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/amaanq/coc.go/clan"
 	"github.com/amaanq/coc.go/labels"
@@ -21,6 +23,15 @@ const (
 
 func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) {
 	url := BaseUrl + route
+	data, contains := h.cache.Get(url)
+	if contains {
+		byt, ok := data.([]byte)
+		if ok {
+			return byt, nil
+		} else {
+			return byt, fmt.Errorf("failed type conversion")
+		}
+	}
 	var req *resty.Request
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
@@ -46,6 +57,12 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 	if resp.StatusCode() != 200 {
 		return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 	}
+	cachetime, err := strconv.Atoi(resp.Header().Get("cache-control")[strings.Index(resp.Header().Get("cache-control"), "=")+1:])
+	if err != nil {
+		fmt.Println(err.Error())
+		return resp.Body(), nil
+	}
+	h.cache.Add(url, resp.Body(), time.Second*time.Duration(cachetime))
 	return resp.Body(), nil
 }
 
@@ -80,21 +97,22 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 	return resp.Body(), nil
 }
 
-func (h *HTTPSessionManager) SearchClans(arg map[string]string) ([]byte, error) {
+func (h *HTTPSessionManager) SearchClans(args ...map[string]string) (clan.ClanList, error) {
+	var clanlist clan.ClanList
 	endpoint := "/clans"
-	params := ""
-	for key, val := range arg {
-		params += fmt.Sprintf("%s=%s&", key, val)
+	params := parseArgs(args)
+	if params == "" {
+		return clanlist, fmt.Errorf("at least 1 parameter is required")
 	}
-	params = params[:len(params)-1]
-	if params != "" {
-		endpoint += "?" + params
-	}
+	endpoint += params
 	data, err := h.Request(endpoint, false)
 	if err != nil {
-		return nil, err
+		return clanlist, err
 	}
-	return data, nil
+	if err := json.Unmarshal(data, &clanlist); err != nil {
+		return clanlist, err
+	}
+	return clanlist, nil
 }
 
 func (h *HTTPSessionManager) GetClan(ClanTag string) (clan.Clan, error) {

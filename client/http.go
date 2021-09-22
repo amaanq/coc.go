@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/patrickmn/go-cache"
 )
 
 func Initialize(email string, password string) *HTTPSessionManager {
@@ -18,6 +19,7 @@ func Initialize(email string, password string) *HTTPSessionManager {
 		wg:            sync.WaitGroup{},
 		mutex:         sync.RWMutex{},
 		KeyIndex:      0,
+		cache:         cache.New(time.Second*60, time.Second*60),
 	}
 	return H
 }
