@@ -30,7 +30,7 @@ func main() {
 	}
 	for i := 0; i < 100000; i++ {
 		if i % 100 == 0 {
-			mp := map[string]string{"name": "the"+string(rand.Intn(90)+32)}
+			mp := map[string]string{"name": "the"+string(rune(rand.Intn(90)+32))}
 			fmt.Println(mp)
 			cln, err := H.SearchClans(mp)
 			if err != nil {
