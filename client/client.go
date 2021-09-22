@@ -63,6 +63,11 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		return resp.Body(), nil
 	}
 	h.cache.Add(url, resp.Body(), time.Second*time.Duration(cachetime))
+	if h.KeyIndex == len(h.KeysList.Keys) - 1 {
+		h.KeyIndex = 0
+	} else {
+		h.KeyIndex += 1
+	}
 	return resp.Body(), nil
 }
 
@@ -93,6 +98,11 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 	}
 	if resp.StatusCode() != 200 {
 		return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
+	}
+	if h.KeyIndex == len(h.KeysList.Keys) - 1 {
+		h.KeyIndex = 0
+	} else {
+		h.KeyIndex += 1
 	}
 	return resp.Body(), nil
 }
