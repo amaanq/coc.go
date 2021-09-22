@@ -20,18 +20,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("logged in")
 	err = H.GetKeys()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("got keys")
 	err = H.AddOrDeleteKeysAsNecessary()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("finished adding keys")
+	cln, err := H.GetLocationPlayersVersus("32000249")
+	if err != nil {
+		panic(err)
+	}
+	for _, mem := range cln.PlayersVersus {
+		fmt.Println("data:", mem.Name, mem.ExpLevel, mem.Tag, mem.VersusTrophies)
+	}
 	t2 := time.Since(t)
 	fmt.Printf("Took %f seconds\n", t2.Seconds())
-	H.ViewData()
 }
