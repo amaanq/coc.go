@@ -59,7 +59,7 @@ clan, err := ClashClient.GetClan("#YourTag")
 if err != nil {
   panic(err) // or fmt.Println(err.Error()) and return err
 }
-fmt.Printf("Clan: %+v\n", player)
+fmt.Printf("Clan: %+v\n", clan)
 fmt.Println("My clan name is", clan.Name,"and we have", clan.Members, "members in our clan. We have won", clan.WarWins, "wars so come join us!\nThese are our members:")
 for idx, member := range clan.MemberList {
   fmt.Printf("[%d]: %s (%s)", idx, member.Name, member.Role)
