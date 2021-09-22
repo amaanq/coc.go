@@ -21,6 +21,18 @@ func Initialize(email string, password string) *HTTPSessionManager {
 		KeyIndex:      0,
 		cache:         cache.New(time.Second*60, time.Second*60),
 	}
+	err := H.APILopin()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	err = H.GetKeys()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	err = H.AddOrDeleteKeysAsNecessary()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	return H
 }
 
