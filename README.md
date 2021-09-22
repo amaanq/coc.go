@@ -31,8 +31,10 @@ even though nothing is logged or stored here. Initialize automatically logs into
 depending on your IP.
 
 ```go
+import "github.com/amaanq/coc.go/client"
 ClashClient := client.Initialize("your email", "your password")
 ```
+Note that you have to import the subpackage to access its functionality.
 
 See Documentation and Examples below for more detailed information.
 
