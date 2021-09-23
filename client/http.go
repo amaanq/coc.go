@@ -77,6 +77,7 @@ func (h *HTTPSessionManager) GetKeys() error {
 	if err := json.Unmarshal(resp.Body(), &h.KeysList); err != nil { //raw json from sc
 		return err
 	}
+	h.RawKeysList = append(h.RawKeysList, h.KeysList.Keys...)
 	return nil
 }
 
@@ -99,13 +100,15 @@ func (h *HTTPSessionManager) AddKey() error {
 	if err := json.Unmarshal(resp.Body(), &keycreationresponse); err != nil {
 		return err
 	}
-	h.KeysList.Keys = append(h.KeysList.Keys, keycreationresponse.Key)
+	//h.KeysList.Keys = append(h.KeysList.Keys, keycreationresponse.Key)
+	h.RawKeysList = append(h.RawKeysList, keycreationresponse.Key)
+	fmt.Println("appended")
 	fmt.Println("Added key with ID", keycreationresponse.Key.ID)
 	return nil
 }
 
 func (h *HTTPSessionManager) DeleteKey(key Key) error {
-	
+
 	var req *resty.Request
 	var keydeletionresponse KeyDeletionResponse
 	jsn := fmt.Sprintf(`{"id": "%s"}`, key.ID)
@@ -123,12 +126,14 @@ func (h *HTTPSessionManager) DeleteKey(key Key) error {
 	if err := json.Unmarshal(resp.Body(), &keydeletionresponse); err != nil {
 		return err
 	}
-	h.KeysList.Keys = RemoveKey(h.KeysList.Keys, key)
+	//h.KeysList.Keys = RemoveKey(h.KeysList.Keys, key)
+	h.RawKeysList = RemoveKey(h.RawKeysList, key)
+	fmt.Println("removed")
 	return nil
 }
 
 func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) error {
-	errC := make(chan error, len(h.KeysList.Keys))
+	errC := make(chan error, 10)
 	err := h.GetIP()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -143,7 +148,7 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 			h.mutex.Lock()
 			defer h.mutex.Unlock()
 			defer h.wg.Done()
-			if !Contains(key.Cidrranges, h.IP) {
+			if !contains(key.Cidrranges, h.IP) {
 				err := h.DeleteKey(key)
 				if err != nil {
 					fmt.Println("FAILED TO DELETE", err.Error())
@@ -155,6 +160,8 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 					fmt.Println(err.Error())
 					errC <- err
 					return
+				} else {
+					fmt.Println("success")
 				}
 			}
 			errC <- nil
@@ -165,11 +172,17 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 		}
 	}
 	h.wg.Wait()
-
-	if len(h.KeysList.Keys) != len(h.Credentials)*10 {
-		fmt.Printf("Creating %d additional keys\n", len(h.Credentials)*10-len(h.KeysList.Keys))
+	thisdevskeycount := 0
+	for _, key := range h.KeysList.Keys {
+		if key.Developerid == developerID {
+			thisdevskeycount++
+		}
+	}
+	if thisdevskeycount < 10 {
+		fmt.Printf("Creating %d additional keys\n", 10-thisdevskeycount)
+		fmt.Println("1")
 		for {
-			if len(h.KeysList.Keys) >= len(h.Credentials)*10 { //max limit
+			if thisdevskeycount >= 10 { //max limit
 				break
 			}
 			h.wg.Add(1)
@@ -182,12 +195,16 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 					errC <- err
 					return
 				}
+				thisdevskeycount++
 			}()
+			fmt.Println("2")
 		}
 		for i := 0; i < len(h.KeysList.Keys); i++ {
+			fmt.Println("3")
 			if err := <-errC; err != nil {
 				return err
 			}
+			fmt.Println("4")
 		}
 	}
 	h.wg.Wait()
@@ -226,7 +243,16 @@ func RemoveKey(keylist []Key, deleteKey Key) []Key {
 	return ret
 }
 
-func Contains(s []string, str string) bool {
+func in(keylist []Key, _key Key) bool {
+	for _, key := range keylist {
+		if key.ID == _key.ID {
+			return true
+		}
+	}
+	return false
+}
+
+func contains(s []string, str string) bool {
 	for _, v := range s {
 		if v == str {
 			return true

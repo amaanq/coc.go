@@ -15,6 +15,7 @@ type HTTPSessionManager struct {
 	CacheMaxSize  int
 	LoginResponse LoginResponse
 	KeysList      KeysList
+	RawKeysList   []Key
 	KeyIndex      int
 	IP            string
 	wg            sync.WaitGroup

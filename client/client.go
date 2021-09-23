@@ -36,7 +36,7 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
-		SetHeader("authorization", fmt.Sprintf("Bearer %s", h.KeysList.Keys[h.KeyIndex].Key)).
+		SetHeader("authorization", fmt.Sprintf("Bearer %s", h.RawKeysList[h.KeyIndex].Key)).
 		SetResult(&req).
 		Get(url)
 	if err != nil {
@@ -73,7 +73,7 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		return resp.Body(), nil
 	}
 	h.cache.Add(url, resp.Body(), time.Second*time.Duration(cachetime))
-	if h.KeyIndex == len(h.KeysList.Keys)-1 {
+	if h.KeyIndex == len(h.RawKeysList)-1 {
 		h.KeyIndex = 0
 	} else {
 		h.KeyIndex += 1
@@ -87,7 +87,7 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
-		SetHeader("authorization", fmt.Sprintf("Bearer %s", h.KeysList.Keys[h.KeyIndex].Key)).
+		SetHeader("authorization", fmt.Sprintf("Bearer %s", h.RawKeysList[h.KeyIndex].Key)).
 		SetBody(body).
 		SetResult(&req).
 		Post(url)
@@ -119,7 +119,7 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 	if resp.StatusCode() != 200 {
 		return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 	}
-	if h.KeyIndex == len(h.KeysList.Keys)-1 {
+	if h.KeyIndex == len(h.RawKeysList)-1 {
 		h.KeyIndex = 0
 	} else {
 		h.KeyIndex += 1
