@@ -1,5 +1,4 @@
 [![Build Status](https://app.travis-ci.com/amaanq/coc.go.svg?branch=master)](https://app.travis-ci.com/amaanq/coc.go.svg?branch=master)
-[![codecov](https://codecov.io/gh/./branch/master/graph/badge.svg)](https://codecov.io/gh/github.com/amaanq/coc.go)
 [![GoDoc](https://img.shields.io/badge/pkg.go.dev-doc-blue)](http://pkg.go.dev/github.com/amaanq/coc.go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/amaanq/coc.go)](https://goreportcard.com/report/github.com/amaanq/coc.go)
 
@@ -28,13 +27,14 @@ import "github.com/amaanq/coc.go"
 Construct a new Clash API Client which can be used to access the variety of 
 Clash API functions. Please ENSURE your credentials are valid and please DO NOT use a password you use for important credentials, 
 even though nothing is logged or stored here. Initialize automatically logs into your developer account, checks your keys, and adds or deletes them as necessary
-depending on your IP.
+depending on your IP. You are able to login with multiple credentials in the event your application/project is large and draws a lot of users, key handling is done automatically for all logins. 
 
 ```go
 import "github.com/amaanq/coc.go/client"
-ClashClient := client.Initialize("your email", "your password")
+ClashClient := client.Initialize(map[string]string{"email": "password", "email2": "password2", "email3": "password3"})
 ```
-Note that you have to import the subpackage to access its functionality.
+Note that you have to import the subpackage to access its functionality, and that you can add as many logins as you want, but it'll be slower with more. 
+I recommend no more than 3.
 
 See Documentation and Examples below for more detailed information.
 
