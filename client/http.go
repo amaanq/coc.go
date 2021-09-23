@@ -35,7 +35,7 @@ func Initialize(credentials ...map[string]string) *HTTPSessionManager {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		err = H.AddOrDeleteKeysAsNecessary()
+		err = H.AddOrDeleteKeysAsNecessary(*H.LoginResponse.Developer.ID)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -109,6 +109,7 @@ func (h *HTTPSessionManager) AddKey() error {
 }
 
 func (h *HTTPSessionManager) DeleteKey(key Key) error {
+	
 	var req *resty.Request
 	var keydeletionresponse KeyDeletionResponse
 	jsn := fmt.Sprintf(`{"id": "%s"}`, key.ID)
@@ -130,7 +131,7 @@ func (h *HTTPSessionManager) DeleteKey(key Key) error {
 	return nil
 }
 
-func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary() error {
+func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) error {
 	errC := make(chan error, len(h.KeysList.Keys))
 	err := h.GetIP()
 	if err != nil {
@@ -139,6 +140,9 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary() error {
 	}
 	for _, key := range h.KeysList.Keys {
 		h.wg.Add(1)
+		if key.Developerid != developerID {
+			continue
+		}
 		go func(key Key) {
 			h.mutex.Lock()
 			defer h.mutex.Unlock()
@@ -166,10 +170,10 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary() error {
 	}
 	h.wg.Wait()
 
-	if len(h.KeysList.Keys) != 10 {
-		fmt.Printf("Creating %d additional keys\n", 10-len(h.KeysList.Keys))
+	if len(h.KeysList.Keys) != len(h.Credentials)*10 {
+		fmt.Printf("Creating %d additional keys\n", len(h.Credentials)*10-len(h.KeysList.Keys))
 		for {
-			if len(h.KeysList.Keys) >= 10 { //max limit
+			if len(h.KeysList.Keys) >= len(h.Credentials)*10 { //max limit
 				break
 			}
 			h.wg.Add(1)
