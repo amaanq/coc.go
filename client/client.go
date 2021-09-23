@@ -104,6 +104,11 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 	} else {
 		h.KeyIndex += 1
 	}
+	if h.KeyIndex == len(h.KeysList.Keys) - 1 {
+		h.KeyIndex = 0
+	} else {
+		h.KeyIndex += 1
+	}
 	return resp.Body(), nil
 }
 
