@@ -8,8 +8,7 @@ import (
 )
 
 type HTTPSessionManager struct {
-	Email         string
-	Password      string
+	Credentials   []LoginCredential
 	Client        *resty.Client
 	KeyNames      string
 	KeyCount      int
@@ -22,6 +21,11 @@ type HTTPSessionManager struct {
 	wg            sync.WaitGroup
 	mutex         sync.RWMutex
 	cache         *cache.Cache
+}
+
+type LoginCredential struct {
+	Email    string
+	Password string
 }
 
 type LoginResponse struct {

@@ -10,10 +10,15 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-func Initialize(email string, password string) *HTTPSessionManager {
+func Initialize(credentials ...map[string]string) *HTTPSessionManager {
+	var creds []LoginCredential
+	for _, credential := range credentials {
+		for email, password := range credential {
+			creds = append(creds, LoginCredential{Email: email, Password: password})
+		}
+	}
 	H := &HTTPSessionManager{
-		Email:         email,
-		Password:      password,
+		Credentials:   creds,
 		LoginResponse: LoginResponse{},
 		Client:        resty.New().AddRetryAfterErrorCondition().EnableTrace().SetDisableWarn(true),
 		wg:            sync.WaitGroup{},
@@ -21,26 +26,28 @@ func Initialize(email string, password string) *HTTPSessionManager {
 		KeyIndex:      0,
 		cache:         cache.New(time.Second*60, time.Second*60),
 	}
-	err := H.APILopin()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	err = H.GetKeys()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	err = H.AddOrDeleteKeysAsNecessary()
-	if err != nil {
-		fmt.Println(err.Error())
+	for _, credential := range H.Credentials {
+		err := H.APILopin(credential)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		err = H.GetKeys()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		err = H.AddOrDeleteKeysAsNecessary()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 	return H
 }
 
-func (h *HTTPSessionManager) APILopin() error {
+func (h *HTTPSessionManager) APILopin(credential LoginCredential) error {
 	var req *resty.Request
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBody(fmt.Sprintf(`{"email":"%s","password":"%s"}`, h.Email, h.Password)).
+		SetBody(fmt.Sprintf(`{"email":"%s","password":"%s"}`, credential.Email, credential.Password)).
 		SetResult(&req).
 		Post("https://developer.clashofclans.com/api/login")
 	if err != nil {
