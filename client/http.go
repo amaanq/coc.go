@@ -77,9 +77,6 @@ func (h *HTTPSessionManager) GetKeys() error {
 	if err := json.Unmarshal(resp.Body(), &h.KeysList); err != nil { //raw json from sc
 		return err
 	}
-	for _, key := range h.KeysList.Keys { //actual key info
-		h.RawKeys = append(h.RawKeys, key.Key)
-	}
 	return nil
 }
 
@@ -103,7 +100,6 @@ func (h *HTTPSessionManager) AddKey() error {
 		return err
 	}
 	h.KeysList.Keys = append(h.KeysList.Keys, keycreationresponse.Key)
-	h.RawKeys = append(h.RawKeys, keycreationresponse.Key.Key)
 	fmt.Println("Added key with ID", keycreationresponse.Key.ID)
 	return nil
 }

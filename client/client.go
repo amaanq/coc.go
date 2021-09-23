@@ -47,9 +47,19 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 			return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 		}
 		if strings.Contains(string(resp.Body()), "accessDenied.invalidIp") {
-			err := h.AddOrDeleteKeysAsNecessary()
-			if err != nil {
-				return nil, err
+			for _, credential := range h.Credentials {
+				err := h.APILopin(credential)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				err = h.GetKeys()
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				err = h.AddOrDeleteKeysAsNecessary(*h.LoginResponse.Developer.ID)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
 			}
 			return h.Request(route, true)
 		}
@@ -63,7 +73,7 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		return resp.Body(), nil
 	}
 	h.cache.Add(url, resp.Body(), time.Second*time.Duration(cachetime))
-	if h.KeyIndex == len(h.KeysList.Keys) - 1 {
+	if h.KeyIndex == len(h.KeysList.Keys)-1 {
 		h.KeyIndex = 0
 	} else {
 		h.KeyIndex += 1
@@ -89,9 +99,19 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 			return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 		}
 		if strings.Contains(string(resp.Body()), "accessDenied.invalidIp") {
-			err := h.AddOrDeleteKeysAsNecessary()
-			if err != nil {
-				return nil, err
+			for _, credential := range h.Credentials {
+				err := h.APILopin(credential)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				err = h.GetKeys()
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				err = h.AddOrDeleteKeysAsNecessary(*h.LoginResponse.Developer.ID)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
 			}
 			return h.Post(route, body, true)
 		}
@@ -99,7 +119,7 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 	if resp.StatusCode() != 200 {
 		return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 	}
-	if h.KeyIndex == len(h.KeysList.Keys) - 1 {
+	if h.KeyIndex == len(h.KeysList.Keys)-1 {
 		h.KeyIndex = 0
 	} else {
 		h.KeyIndex += 1

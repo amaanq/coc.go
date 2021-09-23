@@ -14,7 +14,6 @@ type HTTPSessionManager struct {
 	KeyCount      int
 	CacheMaxSize  int
 	LoginResponse LoginResponse
-	RawKeys       []string
 	KeysList      KeysList
 	KeyIndex      int
 	IP            string
