@@ -18,8 +18,9 @@ type HTTPSessionManager struct {
 	RawKeysList   []Key
 	KeyIndex      int
 	IP            string
-	wg            sync.WaitGroup
-	mutex         sync.RWMutex
+	WG            sync.WaitGroup
+	Mutex         sync.RWMutex
+	IsValidKeys   bool
 	cache         *cache.Cache
 }
 

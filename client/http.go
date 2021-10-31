@@ -21,9 +21,10 @@ func Initialize(credentials ...map[string]string) *HTTPSessionManager {
 		Credentials:   creds,
 		LoginResponse: LoginResponse{},
 		Client:        resty.New().AddRetryAfterErrorCondition().EnableTrace().SetDisableWarn(true),
-		wg:            sync.WaitGroup{},
-		mutex:         sync.RWMutex{},
+		WG:            sync.WaitGroup{},
+		Mutex:         sync.RWMutex{},
 		KeyIndex:      0,
+		IsValidKeys:   true,
 		cache:         cache.New(time.Second*60, time.Second*60),
 	}
 	for _, credential := range H.Credentials {
@@ -102,7 +103,6 @@ func (h *HTTPSessionManager) AddKey() error {
 	}
 	//h.KeysList.Keys = append(h.KeysList.Keys, keycreationresponse.Key)
 	h.RawKeysList = append(h.RawKeysList, keycreationresponse.Key)
-	fmt.Println("appended")
 	fmt.Println("Added key with ID", keycreationresponse.Key.ID)
 	return nil
 }
@@ -128,11 +128,11 @@ func (h *HTTPSessionManager) DeleteKey(key Key) error {
 	}
 	//h.KeysList.Keys = RemoveKey(h.KeysList.Keys, key)
 	h.RawKeysList = RemoveKey(h.RawKeysList, key)
-	fmt.Println("removed")
 	return nil
 }
 
 func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) error {
+	h.IsValidKeys = false 
 	errC := make(chan error, 10)
 	err := h.GetIP()
 	if err != nil {
@@ -140,14 +140,14 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 		return err
 	}
 	for _, key := range h.KeysList.Keys {
-		h.wg.Add(1)
+		h.WG.Add(1)
 		if key.Developerid != developerID {
 			continue
 		}
 		go func(key Key) {
-			h.mutex.Lock()
-			defer h.mutex.Unlock()
-			defer h.wg.Done()
+			h.Mutex.Lock()
+			defer h.Mutex.Unlock()
+			defer h.WG.Done()
 			if !contains(key.Cidrranges, h.IP) {
 				err := h.DeleteKey(key)
 				if err != nil {
@@ -160,8 +160,6 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 					fmt.Println(err.Error())
 					errC <- err
 					return
-				} else {
-					fmt.Println("success")
 				}
 			}
 			errC <- nil
@@ -171,7 +169,7 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 			return err
 		}
 	}
-	h.wg.Wait()
+	h.WG.Wait()
 	thisdevskeycount := 0
 	for _, key := range h.KeysList.Keys {
 		if key.Developerid == developerID {
@@ -180,16 +178,15 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 	}
 	if thisdevskeycount < 10 {
 		fmt.Printf("Creating %d additional keys\n", 10-thisdevskeycount)
-		fmt.Println("1")
 		for {
 			if thisdevskeycount >= 10 { //max limit
 				break
 			}
-			h.wg.Add(1)
+			h.WG.Add(1)
 			go func() {
-				h.mutex.Lock()
-				defer h.mutex.Unlock()
-				defer h.wg.Done()
+				h.Mutex.Lock()
+				defer h.Mutex.Unlock()
+				defer h.WG.Done()
 				err = h.AddKey()
 				if err != nil {
 					errC <- err
@@ -197,18 +194,16 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 				}
 				thisdevskeycount++
 			}()
-			fmt.Println("2")
 		}
 		for i := 0; i < len(h.KeysList.Keys); i++ {
-			fmt.Println("3")
 			if err := <-errC; err != nil {
 				return err
 			}
-			fmt.Println("4")
 		}
 	}
-	h.wg.Wait()
+	h.WG.Wait()
 	close(errC)
+	h.IsValidKeys = true 
 	return nil
 }
 
@@ -227,7 +222,7 @@ func (h *HTTPSessionManager) GetIP() error {
 	return nil
 }
 
-func (h *HTTPSessionManager) ViewData() {
+func (h *HTTPSessionManager) ViewKeys() {
 	for _, key := range h.KeysList.Keys {
 		fmt.Println("[Key] ", key.Key, "[ID]", key.ID, key.Name, key.Cidrranges, key.Developerid, key.Description)
 	}
