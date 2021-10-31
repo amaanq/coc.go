@@ -22,6 +22,9 @@ const (
 )
 
 func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) {
+	if !h.IsValidKeys {
+		return nil, fmt.Errorf("keys are not yet ready, wait a few seconds")
+	}
 	url := BaseUrl + route
 	data, contains := h.cache.Get(url)
 	if contains {
@@ -82,6 +85,9 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 }
 
 func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byte, error) {
+	if !h.IsValidKeys {
+		return nil, fmt.Errorf("keys are not yet ready, wait a few seconds")
+	}
 	url := BaseUrl + route
 	var req *resty.Request
 	resp, err := h.Client.R().
