@@ -36,10 +36,18 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		}
 	}
 	var req *resty.Request
+	h.Mutex.RLock()
+	key := h.RawKeysList[h.KeyIndex].Key
+	if h.KeyIndex == len(h.RawKeysList)-1 {
+		h.KeyIndex = 0
+	} else {
+		h.KeyIndex += 1
+	}
+	h.Mutex.RUnlock()
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
-		SetHeader("authorization", fmt.Sprintf("Bearer %s", h.RawKeysList[h.KeyIndex].Key)).
+		SetHeader("authorization", fmt.Sprintf("Bearer %s", key)).
 		SetResult(&req).
 		Get(url)
 	if err != nil {
@@ -76,11 +84,6 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		return resp.Body(), nil
 	}
 	h.cache.Add(url, resp.Body(), time.Second*time.Duration(cachetime))
-	if h.KeyIndex == len(h.RawKeysList)-1 {
-		h.KeyIndex = 0
-	} else {
-		h.KeyIndex += 1
-	}
 	return resp.Body(), nil
 }
 
