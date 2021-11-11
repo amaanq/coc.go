@@ -36,14 +36,14 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		}
 	}
 	var req *resty.Request
-	h.Mutex.RLock()
+	h.Mutex.Lock()
 	key := h.RawKeysList[h.KeyIndex].Key
 	if h.KeyIndex == len(h.RawKeysList)-1 {
 		h.KeyIndex = 0
 	} else {
 		h.KeyIndex += 1
 	}
-	h.Mutex.RUnlock()
+	h.Mutex.Unlock()
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
