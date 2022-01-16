@@ -73,7 +73,7 @@ that make use of it. As such, if you want to specify arguments to SearchClans, d
 ```go
 clanlist, err := ClashClient.SearchClans(map[string]string{"name": "hey", "minLevel": "10"})
 //which is the same as:
-clanlist, err := ClashClient.SearchClans(map[string]string{"name": "hey"}, map[string][string]{"minLevel": "10"})
+clanlist, err := ClashClient.SearchClans(map[string]string{"name": "hey"}, map[string]string{"minLevel": "10"})
 for _, clan := range cln.Clans {
     fmt.Println("data:", clan.Name, clan.RequiredTownhallLevel, clan.ClanLevel, clan.RequiredTrophies)
     if clan.ClanLevel >= 15 {
