@@ -150,14 +150,13 @@ func (h *HTTPSessionManager) SearchClans(args ...map[string]string) (*clan.ClanL
 		return clanlist, fmt.Errorf("at least 1 parameter is required")
 	}
 	endpoint += params
-	
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
-
-		return clanlist, err
+		return nil, err
 	}
 	if err := json.Unmarshal(data, &clanlist); err != nil {
-		return clanlist, err
+		return nil, err
 	}
 	return clanlist, nil
 }
@@ -169,10 +168,10 @@ func (h *HTTPSessionManager) GetClan(ClanTag string) (*clan.Clan, error) {
 
 	data, err := h.Request(endpoint, false)
 	if err != nil {
-		return cln, err
+		return nil, err
 	}
 	if err := json.Unmarshal(data, &cln); err != nil {
-		return cln, err
+		return nil, err
 	}
 	return cln, nil
 }
@@ -192,19 +191,20 @@ func (h *HTTPSessionManager) GetClanMembers(ClanTag string) ([]clan.ClanMember, 
 	return clanmems.Items, nil
 }
 
-func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) (*clan.WarLog, error) {
+func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) ([]clan.War, error) {
 	ClanTag = CorrectTag(ClanTag)
 	var clanwarlog *clan.WarLog
 	endpoint := "/clans/" + url.PathEscape(ClanTag) + "/warlog"
 
 	data, err := h.Request(endpoint, false)
 	if err != nil {
-		return clanwarlog, err
+		return nil, err
 	}
+	fmt.Println(string(data))
 	if err := json.Unmarshal(data, &clanwarlog); err != nil {
-		return clanwarlog, err
+		return nil, err
 	}
-	return clanwarlog, nil
+	return clanwarlog.Items, nil
 }
 
 func (h *HTTPSessionManager) GetClanCurrentWar(ClanTag string) (*clan.CurrentWar, error) {
@@ -214,10 +214,11 @@ func (h *HTTPSessionManager) GetClanCurrentWar(ClanTag string) (*clan.CurrentWar
 
 	data, err := h.Request(endpoint, false)
 	if err != nil {
-		return clanwar, err
+		return nil, err
 	}
+	fmt.Println(string(data))
 	if err := json.Unmarshal(data, &clanwar); err != nil {
-		return clanwar, err
+		return nil, err
 	}
 	return clanwar, nil
 }

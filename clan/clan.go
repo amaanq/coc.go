@@ -94,8 +94,8 @@ type WarLeague struct {
 type Role string
 
 const (
-	Admin    Role = "admin"
-	CoLeader Role = "coLeader"
-	Leader   Role = "leader"
-	Member   Role = "member"
+	AdminRole    Role = "admin"
+	CoLeaderRole Role = "coLeader"
+	LeaderRole   Role = "leader"
+	MemberRole   Role = "member"
 )

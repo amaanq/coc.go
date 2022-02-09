@@ -1,64 +1,53 @@
 package clan
 
 type WarLog struct {
-	Wars   []War `json:"items,omitempty"`
-	Paging struct {
-		Cursors struct {
-		} `json:"cursors,omitempty"`
-	} `json:"paging,omitempty"`
+	Items []War `json:"items"`
 }
 
 type War struct {
-	Result   Result `json:"result"`
-	EndTime  string `json:"endTime,omitempty"`
-	TeamSize int64  `json:"teamSize,omitempty"`
-	Clan     Clan   `json:"clan,omitempty"`
-	Opponent Clan   `json:"opponent,omitempty"`
+	Result           Result `json:"result"`
+	EndTime          string `json:"endTime"`
+	TeamSize         int64  `json:"teamSize"`
+	AttacksPerMember int64  `json:"attacksPerMember"`
+	Clan             Clan   `json:"clan"`
+	Opponent         Clan   `json:"opponent"`
+}
+
+type WarClan struct {
+	Tag                   string      `json:"tag"`
+	Name                  string      `json:"name"`
+	BadgeUrls             BadgeUrls   `json:"badgeUrls"`
+	ClanLevel             int64       `json:"clanLevel"`
+	Attacks               int64       `json:"attacks"`
+	Stars                 int64       `json:"stars"`
+	DestructionPercentage float64     `json:"destructionPercentage"`
+	ExpEarned             int64       `json:"expEarned"`
+	Members               []WarMember `json:"members"`
+}
+
+type CurrentWar struct {
+	State                string  `json:"state"`
+	TeamSize             int64   `json:"teamSize"`
+	AttacksPerMember     int64   `json:"attacksPerMember"`
+	PreparationStartTime string  `json:"preparationStartTime"`
+	StartTime            string  `json:"startTime"`
+	EndTime              string  `json:"endTime"`
+	Clan                 WarClan `json:"clan"`
+	Opponent             WarClan `json:"opponent"`
+}
+
+type WarMember struct {
+	Tag             string `json:"tag"`
+	Name            string `json:"name"`
+	TownhallLevel   int64  `json:"townhallLevel"`
+	MapPosition     int64  `json:"mapPosition"`
+	OpponentAttacks int64  `json:"opponentAttacks"`
 }
 
 type Result string
+
 const (
 	Lose Result = "lose"
 	Tie  Result = "tie"
 	Win  Result = "win"
 )
-
-type CurrentWar struct {
-	State                string `json:"state,omitempty"`
-	TeamSize             int64  `json:"teamSize,omitempty"`
-	PreparationStartTime string `json:"preparationStartTime,omitempty"`
-	StartTime            string `json:"startTime,omitempty"`
-	EndTime              string `json:"endTime,omitempty"`
-	Clan                 WarClan   `json:"clan,omitempty"`
-	Opponent             WarClan   `json:"opponent,omitempty"`
-}
-
-type WarClan struct {
-	Tag                   string      `json:"tag,omitempty"`
-	Name                  string      `json:"name,omitempty"`
-	BadgeUrls             BadgeUrls   `json:"badgeUrls,omitempty"`
-	ClanLevel             int64       `json:"clanLevel,omitempty"`
-	Attacks               int64       `json:"attacks,omitempty"`
-	Stars                 int64       `json:"stars,omitempty"`
-	DestructionPercentage float64     `json:"destructionPercentage,omitempty"`
-	Members               []WarMember `json:"members,omitempty"`
-}
-
-type WarMember struct {
-	Tag                string   `json:"tag,omitempty"`
-	Name               string   `json:"name,omitempty"`
-	TownhallLevel      int64    `json:"townhallLevel,omitempty"`
-	MapPosition        int64    `json:"mapPosition,omitempty"`
-	OpponentAttacks    int64    `json:"opponentAttacks,omitempty"`
-	BestOpponentAttack Attack   `json:"bestOpponentAttack,omitempty"`
-	Attacks            []Attack `json:"attacks,omitempty"`
-}
-
-type Attack struct {
-	AttackerTag           *string `json:"attackerTag,omitempty"`
-	DefenderTag           *string `json:"defenderTag,omitempty"`
-	Stars                 *int64  `json:"stars,omitempty"`
-	DestructionPercentage *int64  `json:"destructionPercentage,omitempty"`
-	Order                 *int64  `json:"order,omitempty"`
-	Duration              *int64  `json:"duration,omitempty"`
-}
