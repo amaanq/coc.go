@@ -14,12 +14,18 @@ import (
 	"github.com/amaanq/coc.go/league"
 	"github.com/amaanq/coc.go/location"
 	"github.com/amaanq/coc.go/player"
-	"github.com/go-resty/resty/v2"
 )
 
 const (
 	BaseUrl = "https://api.clashofclans.com/v1"
 )
+
+// Credit: https://github.com/mathsman5133/coc.py/blob/master/coc/utils.py
+func CorrectTag(tag string) string {
+	re := regexp.MustCompile("[^A-Z0-9]+")
+	tag = "#" + strings.ReplaceAll(re.ReplaceAllString(strings.ToUpper(tag), ""), "O", "0")
+	return tag
+}
 
 func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) {
 	if !h.IsValidKeys {
@@ -35,20 +41,20 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 			return byt, fmt.Errorf("failed type conversion")
 		}
 	}
-	var req *resty.Request
-	h.Mutex.Lock()
+
+	h.Lock()
 	key := h.RawKeysList[h.KeyIndex].Key
 	if h.KeyIndex == len(h.RawKeysList)-1 {
 		h.KeyIndex = 0
 	} else {
 		h.KeyIndex += 1
 	}
-	h.Mutex.Unlock()
+	h.Unlock()
+
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
 		SetHeader("authorization", fmt.Sprintf("Bearer %s", key)).
-		SetResult(&req).
 		Get(url)
 	if err != nil {
 		return nil, err
@@ -92,14 +98,14 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 		return nil, fmt.Errorf("keys are not yet ready, wait a few seconds")
 	}
 	url := BaseUrl + route
-	var req *resty.Request
+
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
 		SetHeader("authorization", fmt.Sprintf("Bearer %s", h.RawKeysList[h.KeyIndex].Key)).
 		SetBody(body).
-		SetResult(&req).
 		Post(url)
+
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +150,7 @@ func (h *HTTPSessionManager) SearchClans(args ...map[string]string) (*clan.ClanL
 		return clanlist, fmt.Errorf("at least 1 parameter is required")
 	}
 	endpoint += params
+	
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 
@@ -156,11 +163,10 @@ func (h *HTTPSessionManager) SearchClans(args ...map[string]string) (*clan.ClanL
 }
 
 func (h *HTTPSessionManager) GetClan(ClanTag string) (*clan.Clan, error) {
-	if !strings.Contains(ClanTag, "#") {
-		ClanTag = "#" + ClanTag
-	}
+	ClanTag = CorrectTag(ClanTag)
 	var cln *clan.Clan
 	endpoint := "/clans/" + url.PathEscape(ClanTag)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return cln, err
@@ -171,28 +177,26 @@ func (h *HTTPSessionManager) GetClan(ClanTag string) (*clan.Clan, error) {
 	return cln, nil
 }
 
-func (h *HTTPSessionManager) GetClanMembers(ClanTag string) (*clan.MemberList, error) {
-	if !strings.Contains(ClanTag, "#") {
-		ClanTag = "#" + ClanTag
-	}
-	var clanmems *clan.MemberList
+func (h *HTTPSessionManager) GetClanMembers(ClanTag string) ([]clan.ClanMember, error) {
+	ClanTag = CorrectTag(ClanTag)
+	var clanmems clan.ClanMemberEndpoint
 	endpoint := "/clans/" + url.PathEscape(ClanTag) + "/members"
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
-		return clanmems, err
+		return nil, err
 	}
 	if err := json.Unmarshal(data, &clanmems); err != nil {
-		return clanmems, err
+		return nil, err
 	}
-	return clanmems, nil
+	return clanmems.Items, nil
 }
 
 func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) (*clan.WarLog, error) {
-	if !strings.Contains(ClanTag, "#") {
-		ClanTag = "#" + ClanTag
-	}
+	ClanTag = CorrectTag(ClanTag)
 	var clanwarlog *clan.WarLog
 	endpoint := "/clans/" + url.PathEscape(ClanTag) + "/warlog"
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return clanwarlog, err
@@ -204,11 +208,10 @@ func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) (*clan.WarLog, error)
 }
 
 func (h *HTTPSessionManager) GetClanCurrentWar(ClanTag string) (*clan.CurrentWar, error) {
-	if !strings.Contains(ClanTag, "#") {
-		ClanTag = "#" + ClanTag
-	}
+	ClanTag = CorrectTag(ClanTag)
 	var clanwar *clan.CurrentWar
 	endpoint := "/clans/" + url.PathEscape(ClanTag) + "/currentwar"
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return clanwar, err
@@ -231,6 +234,7 @@ func (h *HTTPSessionManager) GetCWLWars(WarTag string) { //above
 func (h *HTTPSessionManager) SearchLocations(args ...map[string]string) (*location.LocationData, error) {
 	var locationdata *location.LocationData
 	endpoint := "/locations" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return locationdata, err
@@ -244,6 +248,7 @@ func (h *HTTPSessionManager) SearchLocations(args ...map[string]string) (*locati
 func (h *HTTPSessionManager) GetLocation(LocationID string) (*location.Location, error) {
 	var location *location.Location
 	endpoint := "/locations/" + LocationID
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return location, err
@@ -257,6 +262,7 @@ func (h *HTTPSessionManager) GetLocation(LocationID string) (*location.Location,
 func (h *HTTPSessionManager) GetLocationClans(LocationID string, args ...map[string]string) (*location.ClanData, error) {
 	var clandata *location.ClanData
 	endpoint := "/locations/" + LocationID + "/rankings/clans" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return clandata, err
@@ -270,6 +276,7 @@ func (h *HTTPSessionManager) GetLocationClans(LocationID string, args ...map[str
 func (h *HTTPSessionManager) GetLocationPlayers(LocationID string, args ...map[string]string) (*location.PlayerData, error) {
 	var playerdata *location.PlayerData
 	endpoint := "/locations/" + LocationID + "/rankings/players" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return playerdata, err
@@ -283,6 +290,7 @@ func (h *HTTPSessionManager) GetLocationPlayers(LocationID string, args ...map[s
 func (h *HTTPSessionManager) GetLocationClansVersus(LocationID string, args ...map[string]string) (*location.ClanVersusData, error) {
 	var clanversusdata *location.ClanVersusData
 	endpoint := "/locations/" + LocationID + "/rankings/clans-versus" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return clanversusdata, err
@@ -296,6 +304,7 @@ func (h *HTTPSessionManager) GetLocationClansVersus(LocationID string, args ...m
 func (h *HTTPSessionManager) GetLocationPlayersVersus(LocationID string, args ...map[string]string) (*location.PlayerVersusData, error) {
 	var playerversusdata *location.PlayerVersusData
 	endpoint := "/locations/" + LocationID + "/rankings/players-versus" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return playerversusdata, err
@@ -309,6 +318,7 @@ func (h *HTTPSessionManager) GetLocationPlayersVersus(LocationID string, args ..
 func (h *HTTPSessionManager) SearchLeagues(args ...map[string]string) (*league.LeagueData, error) {
 	var leaguedata league.LeagueData
 	endpoint := "/leagues" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return &leaguedata, err
@@ -322,6 +332,7 @@ func (h *HTTPSessionManager) SearchLeagues(args ...map[string]string) (*league.L
 func (h *HTTPSessionManager) GetLeague(LeagueID string) (*league.League, error) {
 	var league league.League
 	endpoint := "/leagues/" + LeagueID
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return &league, err
@@ -335,10 +346,11 @@ func (h *HTTPSessionManager) GetLeague(LeagueID string) (*league.League, error) 
 func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID string, args ...map[string]string) (*league.SeasonData, error) {
 	var seasondata *league.SeasonData
 	if LeagueID != "29000022" {
-		fmt.Println("Only Legends League is supported with this. Deferring to 29000022")
+		fmt.Println("Only Legends League is supported with this. Deferring to 29000022. To avoid this message being printed again, pass in 29000022 for the LeagueID argument.")
 		LeagueID = "29000022"
 	}
 	endpoint := "/leagues/" + LeagueID + "/seasons" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return seasondata, err
@@ -349,11 +361,11 @@ func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID string, args ...map[strin
 	return seasondata, nil
 }
 
-//be cautious when using this. the data returned is massive. recommended to add args of {"limit": limit} and use the cursors for more data
+// Be cautious when using this. the data returned is massive. recommended to add args of {"limit": limit} and use the cursors for more data
 func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID string, SeasonID string, args ...map[string]string) (*league.SeasonInfo, error) {
 	var seasoninfo *league.SeasonInfo
 	if LeagueID != "29000022" {
-		fmt.Println("Only Legends League is supported with this. Deferring to 29000022")
+		fmt.Println("Only Legends League is supported with this. Deferring to 29000022. To avoid this message being printed again, pass in 29000022 for the LeagueID argument.")
 		LeagueID = "29000022"
 	}
 	match, err := regexp.MatchString("^20[0-2][0-9]-((0[1-9])|(1[0-2]))$", SeasonID)
@@ -364,6 +376,7 @@ func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID string, SeasonID strin
 		return seasoninfo, fmt.Errorf("invalid season format, format must match YYYY-MM")
 	}
 	endpoint := "/leagues/" + LeagueID + "/seasons/" + SeasonID + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return seasoninfo, err
@@ -375,11 +388,10 @@ func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID string, SeasonID strin
 }
 
 func (h *HTTPSessionManager) GetPlayer(PlayerTag string) (*player.Player, error) {
-	if !strings.Contains(PlayerTag, "#") {
-		PlayerTag = "#" + PlayerTag
-	}
+	PlayerTag = CorrectTag(PlayerTag)
 	var player *player.Player
 	endpoint := "/players/" + url.PathEscape(PlayerTag)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return player, err
@@ -392,11 +404,10 @@ func (h *HTTPSessionManager) GetPlayer(PlayerTag string) (*player.Player, error)
 
 //Only POST method for the API so far
 func (h *HTTPSessionManager) VerifyPlayerToken(PlayerTag string, Token string) (bool, error) {
-	if !strings.Contains(PlayerTag, "#") {
-		PlayerTag = "#" + PlayerTag
-	}
+	PlayerTag = CorrectTag(PlayerTag)
 	var verification *player.Verification
 	endpoint := "/players/" + url.PathEscape(PlayerTag) + "/verifytoken"
+
 	data, err := h.Post(endpoint, fmt.Sprintf(`{"token": "%s"}`, Token), false)
 	if err != nil {
 		return false, err
@@ -410,6 +421,7 @@ func (h *HTTPSessionManager) VerifyPlayerToken(PlayerTag string, Token string) (
 func (h *HTTPSessionManager) GetClanLabels(args ...map[string]string) (*labels.LabelsData, error) {
 	var labels *labels.LabelsData
 	endpoint := "/labels/clans" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return labels, err
@@ -423,6 +435,7 @@ func (h *HTTPSessionManager) GetClanLabels(args ...map[string]string) (*labels.L
 func (h *HTTPSessionManager) GetPlayerLabels(args ...map[string]string) (*labels.LabelsData, error) {
 	var labels *labels.LabelsData
 	endpoint := "/labels/players" + parseArgs(args)
+
 	data, err := h.Request(endpoint, false)
 	if err != nil {
 		return labels, err

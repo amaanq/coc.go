@@ -1,51 +1,94 @@
 package clan
 
-type ClanMember struct {
-	Tag      string `json:"tag,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Role     Role   `json:"role,omitempty"`
-	ExpLevel int64  `json:"expLevel,omitempty"`
-	League   struct {
-		ID       int64  `json:"id,omitempty"`
-		Name     string `json:"name,omitempty"`
-		IconUrls struct {
-			Small  *string `json:"small,omitempty"`
-			Tiny   *string `json:"tiny,omitempty"`
-			Medium *string `json:"medium,omitempty"`
-		} `json:"iconUrls,omitempty"`
-	} `json:"league,omitempty"`
-	Trophies          int64 `json:"trophies,omitempty"`
-	VersusTrophies    int64 `json:"versusTrophies,omitempty"`
-	ClanRank          int64 `json:"clanRank,omitempty"`
-	PreviousClanRank  int64 `json:"previousClanRank,omitempty"`
-	Donations         int64 `json:"donations,omitempty"`
-	DonationsReceived int64 `json:"donationsReceived,omitempty"`
+type Clan struct {
+	Tag                    string       `json:"tag"`
+	Name                   string       `json:"name"`
+	Type                   string       `json:"type"`
+	Description            string       `json:"description"`
+	Location               Location     `json:"location"`
+	BadgeUrls              BadgeUrls    `json:"badgeUrls"`
+	ClanLevel              int          `json:"clanLevel"`
+	ClanPoints             int          `json:"clanPoints"`
+	ClanVersusPoints       int          `json:"clanVersusPoints"`
+	RequiredTrophies       int          `json:"requiredTrophies"`
+	WarFrequency           string       `json:"warFrequency"`
+	WarWinStreak           int          `json:"warWinStreak"`
+	WarWins                int          `json:"warWins"`
+	WarTies                int          `json:"warTies"`
+	WarLosses              int          `json:"warLosses"`
+	IsWarLogPublic         bool         `json:"isWarLogPublic"`
+	WarLeague              WarLeague    `json:"warLeague"`
+	Members                int          `json:"members"`
+	MemberList             []ClanMember `json:"memberList"`
+	Labels                 []Label      `json:"labels"`
+	ChatLanguage           ChatLanguage `json:"chatLanguage"`
+	RequiredVersusTrophies int          `json:"requiredVersusTrophies"`
+	RequiredTownhallLevel  int          `json:"requiredTownhallLevel"`
 }
 
-type Clan struct {
-	BadgeUrls              BadgeUrls    `json:"badgeUrls"`
-	ChatLanguage           ChatLanguage `json:"chatLanguage,omitempty"`
-	ClanLevel              int64        `json:"clanLevel"`
-	ClanPoints             int64        `json:"clanPoints"`
-	ClanVersusPoints       int64        `json:"clanVersusPoints"`
-	Description            string       `json:"description"`
-	IsWarLogPublic         bool         `json:"isWarLogPublic"`
-	Location               Location     `json:"location"`
-	MemberList             []ClanMember `json:"memberList"`
-	Members                int64        `json:"members"`
-	Name                   string       `json:"name"`
-	RequiredTrophies       int64        `json:"requiredTrophies"`
-	RequiredVersusTrophies int64        `json:"requiredVersusTrophies,omitempty"`
-	RequiredTownhallLevel  int64        `json:"requiredTownhallLevel,omitempty"`
-	Tag                    string       `json:"tag"`
-	Type                   string       `json:"type"`
-	WarFrequency           string       `json:"warFrequency"`
-	WarLosses              int64        `json:"warLosses"`
-	WarTies                int64        `json:"warTies"`
-	WarWinStreak           int64        `json:"warWinStreak"`
-	WarWins                int64        `json:"warWins"`
-	WarLeague              WarLeague    `json:"warLeague,omitempty"`
-	Labels                 []Label      `json:"labels,omitempty"`
+type ClanMemberEndpoint struct {
+	Items []ClanMember `json:"items"`
+	// We don't care about paging since a clan members list is not that large
+}
+
+type ClanMember struct {
+	Tag               string `json:"tag"`
+	Name              string `json:"name"`
+	Role              Role   `json:"role"`
+	ExpLevel          int    `json:"expLevel"`
+	League            League `json:"league"`
+	Trophies          int    `json:"trophies"`
+	VersusTrophies    int    `json:"versusTrophies"`
+	ClanRank          int    `json:"clanRank"`
+	PreviousClanRank  int    `json:"previousClanRank"`
+	Donations         int    `json:"donations"`
+	DonationsReceived int    `json:"donationsReceived"`
+}
+
+type BadgeUrls struct {
+	Small  string `json:"small"`
+	Large  string `json:"large"`
+	Medium string `json:"medium"`
+}
+
+type ChatLanguage struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	LanguageCode string `json:"languageCode"`
+}
+
+type Label struct {
+	ID       int           `json:"id"`
+	Name     string        `json:"name"`
+	IconUrls LabelIconUrls `json:"iconUrls"`
+}
+
+type LabelIconUrls struct {
+	Small  string `json:"small"`
+	Medium string `json:"medium"`
+}
+
+type Location struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	IsCountry bool   `json:"isCountry"`
+}
+
+type League struct {
+	ID       int            `json:"id"`
+	Name     string         `json:"name"`
+	IconUrls LeagueIconUrls `json:"iconUrls"`
+}
+
+type LeagueIconUrls struct {
+	Small  string `json:"small"`
+	Tiny   string `json:"tiny"`
+	Medium string `json:"medium"`
+}
+
+type WarLeague struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type Role string
@@ -56,47 +99,3 @@ const (
 	Leader   Role = "leader"
 	Member   Role = "member"
 )
-
-type MemberList struct {
-	Members []ClanMember `json:"items,omitempty"`
-	Paging  struct {
-		Cursors struct {
-		} `json:"cursors,omitempty"`
-	} `json:"paging,omitempty"`
-}
-
-type IconUrls struct {
-	Small  string `json:"small,omitempty"`
-	Tiny   string `json:"tiny,omitempty"`
-	Medium string `json:"medium,omitempty"`
-}
-
-type BadgeUrls struct {
-	Small  string `json:"small,omitempty"`
-	Large  string `json:"large,omitempty"`
-	Medium string `json:"medium,omitempty"`
-}
-
-type Label struct {
-	ID       int64    `json:"id,omitempty"`
-	Name     string   `json:"name,omitempty"`
-	IconUrls IconUrls `json:"iconUrls,omitempty"`
-}
-
-type ChatLanguage struct {
-	ID           int64  `json:"id,omitempty"`
-	Name         string `json:"name,omitempty"`
-	LanguageCode string `json:"languageCode,omitempty"`
-}
-
-type WarLeague struct {
-	ID   int64  `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-type Location struct {
-	ID          int64  `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	IsCountry   bool   `json:"isCountry,omitempty"`
-	CountryCode string `json:"countryCode,omitempty"`
-}

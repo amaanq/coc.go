@@ -22,7 +22,6 @@ func Initialize(credentials ...map[string]string) *HTTPSessionManager {
 		LoginResponse: LoginResponse{},
 		Client:        resty.New().AddRetryAfterErrorCondition().EnableTrace().SetDisableWarn(true),
 		WG:            sync.WaitGroup{},
-		Mutex:         sync.RWMutex{},
 		KeyIndex:      0,
 		IsValidKeys:   true,
 		cache:         cache.New(time.Second*60, time.Second*60),
@@ -132,7 +131,7 @@ func (h *HTTPSessionManager) DeleteKey(key Key) error {
 }
 
 func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) error {
-	h.IsValidKeys = false 
+	h.IsValidKeys = false
 	errC := make(chan error, 10)
 	err := h.GetIP()
 	if err != nil {
@@ -145,8 +144,8 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 			continue
 		}
 		go func(key Key) {
-			h.Mutex.Lock()
-			defer h.Mutex.Unlock()
+			h.Lock()
+			defer h.Unlock()
 			defer h.WG.Done()
 			if !contains(key.Cidrranges, h.IP) {
 				err := h.DeleteKey(key)
@@ -184,8 +183,8 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 			}
 			h.WG.Add(1)
 			go func() {
-				h.Mutex.Lock()
-				defer h.Mutex.Unlock()
+				h.Lock()
+				defer h.Unlock()
 				defer h.WG.Done()
 				err = h.AddKey()
 				if err != nil {
@@ -203,7 +202,7 @@ func (h *HTTPSessionManager) AddOrDeleteKeysAsNecessary(developerID string) erro
 	}
 	h.WG.Wait()
 	close(errC)
-	h.IsValidKeys = true 
+	h.IsValidKeys = true
 	return nil
 }
 

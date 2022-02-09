@@ -8,6 +8,7 @@ import (
 )
 
 type HTTPSessionManager struct {
+	sync.RWMutex
 	Credentials   []LoginCredential
 	Client        *resty.Client
 	KeyNames      string
@@ -19,7 +20,6 @@ type HTTPSessionManager struct {
 	KeyIndex      int
 	IP            string
 	WG            sync.WaitGroup
-	Mutex         sync.RWMutex
 	IsValidKeys   bool
 	cache         *cache.Cache
 }

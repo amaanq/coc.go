@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	//"math/rand"
 	"os"
@@ -41,5 +42,16 @@ func main() {
 		fmt.Printf("Took %f seconds\n", t2.Seconds())
 		t = time.Now()
 	}*/
-	fmt.Println(H.RawKeysList)
+	// fmt.Println(H.RawKeysList)
+	for _, key := range H.RawKeysList {
+		data, _ := json.Marshal(key)
+		fmt.Println(string(data))
+	}
+	p, _ := H.GetClanMembers("#2LU99C90U")
+	// for _, member := range p {
+	// 	fmt.Println(member.League.IconUrls.Medium)
+	// }
+	fmt.Println(p)
+	//data, _ := json.Marshal(p)
+	//fmt.Println(string(data))
 }
