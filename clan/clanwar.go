@@ -5,12 +5,12 @@ type WarLog struct {
 }
 
 type War struct {
-	Result           Result `json:"result"`
-	EndTime          string `json:"endTime"`
-	TeamSize         int64  `json:"teamSize"`
-	AttacksPerMember int64  `json:"attacksPerMember"`
-	Clan             Clan   `json:"clan"`
-	Opponent         Clan   `json:"opponent"`
+	Result           Result  `json:"result"`
+	EndTime          string  `json:"endTime"`
+	TeamSize         int64   `json:"teamSize"`
+	AttacksPerMember int64   `json:"attacksPerMember"`
+	Clan             WarClan `json:"clan"`
+	Opponent         WarClan `json:"opponent"`
 }
 
 type WarClan struct {
