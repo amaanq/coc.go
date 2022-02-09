@@ -37,11 +37,23 @@ type CurrentWar struct {
 }
 
 type WarMember struct {
-	Tag             string `json:"tag"`
-	Name            string `json:"name"`
-	TownhallLevel   int64  `json:"townhallLevel"`
-	MapPosition     int64  `json:"mapPosition"`
-	OpponentAttacks int64  `json:"opponentAttacks"`
+	Tag                string      `json:"tag"`
+	Name               string      `json:"name"`
+	TownhallLevel      int64       `json:"townhallLevel"`
+	MapPosition        int64       `json:"mapPosition"`
+	Attacks            []WarAttack `json:"attacks"`
+	OpponentAttacks    int64       `json:"opponentAttacks"`
+	BestOpponentAttack WarAttack   `json:"bestOpponentAttack"`
+}
+
+type WarAttack struct {
+	// Isn't attacker tag redundant lol
+	AttackerTag           string `json:"attackerTag"`
+	DefenderTag           string `json:"defenderTag"`
+	Stars                 int    `json:"stars"`
+	DestructionPercentage int    `json:"destructionPercentage"`
+	Order                 int    `json:"order"`
+	Duration              int    `json:"duration"`
 }
 
 type Result string
