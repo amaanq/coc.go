@@ -1,5 +1,7 @@
 package location
 
+type LocationID int 
+
 type LocationData struct {
 	Locations []Location `json:"items,omitempty"`
 	Paging    struct {

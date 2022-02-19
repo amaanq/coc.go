@@ -1,14 +1,16 @@
 package clan
 
+import "time"
+
 type WarLog struct {
 	Items []War `json:"items"`
 }
 
 type War struct {
 	Result           Result  `json:"result"`
-	EndTime          string  `json:"endTime"`
-	TeamSize         int64   `json:"teamSize"`
-	AttacksPerMember int64   `json:"attacksPerMember"`
+	endTime          string  `json:"endTime"`
+	TeamSize         int     `json:"teamSize"`
+	AttacksPerMember int     `json:"attacksPerMember"`
 	Clan             WarClan `json:"clan"`
 	Opponent         WarClan `json:"opponent"`
 }
@@ -17,18 +19,18 @@ type WarClan struct {
 	Tag                   string      `json:"tag"`
 	Name                  string      `json:"name"`
 	BadgeUrls             BadgeUrls   `json:"badgeUrls"`
-	ClanLevel             int64       `json:"clanLevel"`
-	Attacks               int64       `json:"attacks"`
-	Stars                 int64       `json:"stars"`
+	ClanLevel             int         `json:"clanLevel"`
+	Attacks               int         `json:"attacks"`
+	Stars                 int         `json:"stars"`
 	DestructionPercentage float64     `json:"destructionPercentage"`
-	ExpEarned             int64       `json:"expEarned"`
+	ExpEarned             int         `json:"expEarned"`
 	Members               []WarMember `json:"members"`
 }
 
 type CurrentWar struct {
 	State                string  `json:"state"`
-	TeamSize             int64   `json:"teamSize"`
-	AttacksPerMember     int64   `json:"attacksPerMember"`
+	TeamSize             int     `json:"teamSize"`
+	AttacksPerMember     int     `json:"attacksPerMember"`
 	PreparationStartTime string  `json:"preparationStartTime"`
 	StartTime            string  `json:"startTime"`
 	EndTime              string  `json:"endTime"`
@@ -39,15 +41,15 @@ type CurrentWar struct {
 type WarMember struct {
 	Tag                string      `json:"tag"`
 	Name               string      `json:"name"`
-	TownhallLevel      int64       `json:"townhallLevel"`
-	MapPosition        int64       `json:"mapPosition"`
+	TownhallLevel      int         `json:"townhallLevel"`
+	MapPosition        int         `json:"mapPosition"`
 	Attacks            []WarAttack `json:"attacks"`
-	OpponentAttacks    int64       `json:"opponentAttacks"`
+	OpponentAttacks    int         `json:"opponentAttacks"`
 	BestOpponentAttack WarAttack   `json:"bestOpponentAttack"`
 }
 
 type WarAttack struct {
-	// Isn't attacker tag redundant lol
+	// Isn't attacker tag redundant
 	AttackerTag           string `json:"attackerTag"`
 	DefenderTag           string `json:"defenderTag"`
 	Stars                 int    `json:"stars"`
@@ -63,3 +65,8 @@ const (
 	Tie  Result = "tie"
 	Win  Result = "win"
 )
+
+func (w *War) EndTime() time.Time {
+	parsed, _ := time.Parse("20060102T150405.999Z", w.endTime)
+	return parsed
+}

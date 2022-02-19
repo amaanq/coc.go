@@ -9,8 +9,13 @@ import (
 
 type HTTPSessionManager struct {
 	sync.RWMutex
+	*resty.Client
+	sync.WaitGroup
+
+	cache *cache.Cache
+	ready bool
+
 	Credentials   []LoginCredential
-	Client        *resty.Client
 	KeyNames      string
 	KeyCount      int
 	CacheMaxSize  int
@@ -19,9 +24,6 @@ type HTTPSessionManager struct {
 	RawKeysList   []Key
 	KeyIndex      int
 	IP            string
-	WG            sync.WaitGroup
-	IsValidKeys   bool
-	cache         *cache.Cache
 }
 
 type LoginCredential struct {
@@ -30,39 +32,43 @@ type LoginCredential struct {
 }
 
 type LoginResponse struct {
-	Status                  Status `json:"status,omitempty"`
-	SessionExpiresInSeconds *int64 `json:"sessionExpiresInSeconds,omitempty"`
-	Auth                    struct {
-		Uid   *string     `json:"uid,omitempty"`
-		Token *string     `json:"token,omitempty"`
-		Ua    interface{} `json:"ua"`
-		IP    interface{} `json:"ip"`
-	} `json:"auth,omitempty"`
-	Developer struct {
-		ID            *string     `json:"id,omitempty"`
-		Name          *string     `json:"name,omitempty"`
-		Game          *string     `json:"game,omitempty"`
-		Email         *string     `json:"email,omitempty"`
-		Tier          *string     `json:"tier,omitempty"`
-		AllowedScopes interface{} `json:"allowedScopes"`
-		MaxCidrs      interface{} `json:"maxCidrs"`
-		PrevLoginTs   *string     `json:"prevLoginTs,omitempty"`
-		PrevLoginIP   *string     `json:"prevLoginIp,omitempty"`
-		PrevLoginUa   *string     `json:"prevLoginUa,omitempty"`
-	} `json:"developer,omitempty"`
-	TemporaryAPIToken string `json:"temporaryAPIToken,omitempty"`
-	SwaggerURL        string `json:"swaggerUrl,omitempty"`
+	Status                  Status    `json:"status"`
+	SessionExpiresInSeconds int64     `json:"sessionExpiresInSeconds"`
+	Auth                    Auth      `json:"auth"`
+	Developer               Developer `json:"developer"`
+	TemporaryAPIToken       string    `json:"temporaryAPIToken"`
+	SwaggerURL              string    `json:"swaggerUrl"`
+}
+
+type Auth struct {
+	Uid   string      `json:"uid"`
+	Token string      `json:"token"`
+	Ua    interface{} `json:"ua"`
+	IP    interface{} `json:"ip"`
+}
+
+type Developer struct {
+	ID            string      `json:"id"`
+	Name          string      `json:"name"`
+	Game          string      `json:"game"`
+	Email         string      `json:"email"`
+	Tier          string      `json:"tier"`
+	AllowedScopes interface{} `json:"allowedScopes"`
+	MaxCidrs      interface{} `json:"maxCidrs"`
+	PrevLoginTs   string      `json:"prevLoginTs"`
+	PrevLoginIP   string      `json:"prevLoginIp"`
+	PrevLoginUa   string      `json:"prevLoginUa"`
 }
 
 type KeyCreationResponse struct {
-	Status                  Status `json:"status,omitempty"`
-	SessionExpiresInSeconds int64  `json:"sessionExpiresInSeconds,omitempty"`
-	Key                     Key    `json:"key,omitempty"`
+	Status                  Status `json:"status"`
+	SessionExpiresInSeconds int64  `json:"sessionExpiresInSeconds"`
+	Key                     Key    `json:"key"`
 }
 
 type KeyDeletionResponse struct {
-	Status                  Status `json:"status,omitempty"`
-	SessionExpiresInSeconds int64  `json:"sessionExpiresInSeconds,omitempty"`
+	Status                  Status `json:"status"`
+	SessionExpiresInSeconds int64  `json:"sessionExpiresInSeconds"`
 }
 
 type Key struct {
@@ -88,4 +94,16 @@ type Status struct {
 	Code    int64       `json:"code,omitempty"`
 	Message string      `json:"message,omitempty"`
 	Detail  interface{} `json:"detail"`
+}
+
+type ClientError struct {
+	error
+	Reason  string      `json:"reason"`
+	Message string      `json:"message"`
+	Type    string      `json:"type"`
+	Detail  interface{} `json:"detail"`
+}
+
+func (c *ClientError) Err() error {
+	return c.error
 }
