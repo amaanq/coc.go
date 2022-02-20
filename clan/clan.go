@@ -26,9 +26,9 @@ type Clan struct {
 	RequiredTownhallLevel  int          `json:"requiredTownhallLevel"`
 }
 
-type ClanMemberEndpoint struct {
-	Items []ClanMember `json:"items"`
+type ClanMembers struct {
 	// We don't care about paging since a clan members list is not that large
+	ClanMembers []ClanMember `json:"items"`
 }
 
 type ClanMember struct {
@@ -100,5 +100,3 @@ const (
 	LeaderRole   Role = "leader"
 	MemberRole   Role = "member"
 )
-
-

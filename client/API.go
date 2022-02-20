@@ -104,6 +104,10 @@ type ClientError struct {
 	Detail  interface{} `json:"detail"`
 }
 
+func (c *ClientError) SetErr(err error) {
+	c.error = err
+}
+
 func (c *ClientError) Err() error {
 	return c.error
 }

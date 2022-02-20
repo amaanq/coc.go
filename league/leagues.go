@@ -1,5 +1,7 @@
 package league
 
+type LeagueID int
+
 type LeagueData struct {
 	Leagues []League `json:"items,omitempty"`
 	Paging  struct {
@@ -19,3 +21,29 @@ type IconUrls struct {
 	Tiny   string `json:"tiny,omitempty"`
 	Medium string `json:"medium,omitempty"`
 }
+
+const (
+	Unranked LeagueID = 29000000 + iota
+	BronzeLeagueIII
+	BronzeLeagueII
+	BronzeLeagueI
+	SilverLeagueIII
+	SilverLeagueII
+	SilverLeagueI
+	GoldLeagueIII
+	GoldLeagueII
+	GoldLeagueI
+	CrystalLeagueIII
+	CrystalLeagueII
+	CrystalLeagueI
+	MasterLeagueIII
+	MasterLeagueII
+	MasterLeagueI
+	ChampionLeagueIII
+	ChampionLeagueII
+	ChampionLeagueI
+	TitanLeagueIII
+	TitanLeagueII
+	TitanLeagueI
+	LegendLeague
+)
