@@ -30,13 +30,23 @@ even though nothing is logged or stored here. Initialize automatically logs into
 depending on your IP. You are able to login with multiple credentials in the event your application/project is large and draws a lot of users, key handling is done automatically for all logins. 
 
 ```go
-import "github.com/amaanq/coc.go/client"
-ClashClient := client.Initialize(map[string]string{"email": "password", "email2": "password2", "email3": "password3"})
+package main
+
+import (
+    "github.com/amaanq/coc.go"
+)
+
+func main() {
+    client, err := coc.New(map[string]string{"email": "password", "email2": "password2", "email3": "password3"})
+    if err != nil {
+        panic(err)
+    }
+}
 ```
-Note that you have to import the subpackage to access its functionality, and that you can add as many logins as you want, but it'll be slower with more. 
+You can add as many logins as you want, but it'll be slower with more logins. 
 I recommend no more than 3.
 
-See Documentation and Examples below for more detailed information.
+See Documentation and /examples below for more detailed information.
 
 **NOTICE**: This library and the Clash API are unfinished.
 Because of that there may be major changes to library in the future.
@@ -46,35 +56,44 @@ the only documentation available.
 There are 4 main types of endpoints for the API. Player, Clan, Location, and League. Minor ones are label and goldpass.
 At the moment the CWL endpoints have yet to be implemented since I don't have sample json to base the structs off of yet. This will be done next cwl. 
 
+⚠️**WARNING:** Errors returned by API methods are a custom error type. To access the underlying error, use err.Err(). To access the message from the error, use err.Message.
+
 Here's how you can fetch player data and display it to your terminal.
 ```go
-player, err := ClashClient.GetPlayer("#YourTag")
-if err != nil {
-  panic(err) // or fmt.Println(err.Error()) and return err
+player, err := client.GetPlayer("#YourTag")
+if err.Err() != nil {
+  panic(err)
 }
+
 fmt.Printf("Player: %+v\n", player)
+fmt.Println("My name is: ", player.Name)
 ```
 
 Same for a clan: 
 ```go
-clan, err := ClashClient.GetClan("#YourTag")
-if err != nil {
-  panic(err) // or fmt.Println(err.Error()) and return err
+clan, err := client.GetClan("#YourTag")
+if err.Err() != nil {
+  panic(err)
 }
+
 fmt.Printf("Clan: %+v\n", clan)
 fmt.Println("My clan name is", clan.Name,"and we have", clan.Members, "members in our clan. We have won", clan.WarWins, "wars so come join us!\nThese are our members:")
 for idx, member := range clan.MemberList {
-  fmt.Printf("[%d]: %s (%s)", idx, member.Name, member.Role)
+  fmt.Printf("[%d]: %s (%s)\n", idx, member.Name, member.Role)
 }
 ```
 
 **IMPORTANT**: There are some endpoints that can pass in a variety of arguments (i.e searching for clans). This arbitrary value is handled as a variadic function in functions
 that make use of it. As such, if you want to specify arguments to SearchClans, do as so:
 ```go
-clanlist, err := ClashClient.SearchClans(map[string]string{"name": "hey", "minLevel": "10"})
+clans, err := client.SearchClans(map[string]string{"name": "hey", "minLevel": "10"})
 //which is the same as:
-clanlist, err := ClashClient.SearchClans(map[string]string{"name": "hey"}, map[string]string{"minLevel": "10"})
-for _, clan := range cln.Clans {
+clans, err := client.SearchClans(map[string]string{"name": "hey"}, map[string]string{"minLevel": "10"})
+if err.Err() != nil {
+    panic(err)
+}
+
+for _, clan := range clans.Clans {
     fmt.Println("data:", clan.Name, clan.RequiredTownhallLevel, clan.ClanLevel, clan.RequiredTrophies)
     if clan.ClanLevel >= 15 {
         fmt.Println("Found a clan you're looking for!", clan.Name, clan.Tag)
@@ -82,8 +101,8 @@ for _, clan := range cln.Clans {
     }
 }
 ```
-You can enter it as one map with several key-value pairs, or several maps with 1 key-value pair, this parsing is handled automatically.
-Enter everything as a string, even ints. You can also leave it empty, this is acceptable but some endpoints will not like this.
+You can enter the map[string]string args as one map with several key-value pairs, or several maps with 1 key-value pair; this parsing is handled automatically.
+Enter every data type as a string, even ints. You can also leave the map empty, this is acceptable but some functions will error as one argument is required (SearchClans being one).
 
 
 ## Short-Hand Links to each Package in this Module
