@@ -55,7 +55,7 @@ player, err := client.GetPlayer("#YourTag")
 if err != nil {
   panic(err)
 }
-fmt.Printf("Player: %+v\n", player
+fmt.Printf("Player: %+v\n", player)
 fmt.Println("My name is: ", player.Name)
 ```
 
