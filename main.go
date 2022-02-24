@@ -11,6 +11,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func New(credentials map[string]string) (*client.HTTPSessionManager, error) {
+	return client.New(credentials)
+}
+
 func main() {
 	godotenv.Load(".env")
 
