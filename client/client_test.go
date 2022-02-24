@@ -20,7 +20,7 @@ func Test(t *testing.T) {
 
 	defer duration(track("Login Time"))
 
-	fmt.Println(H.Logins)
+	fmt.Println(H.logins)
 
 	player, err := H.GetPlayer("#2PP")
 	if err.Err() != nil {
@@ -43,7 +43,7 @@ func Test(t *testing.T) {
 
 	fmt.Println(list.Clans[0])
 
-	fmt.Println(len(H.AllKeys.Keys))
+	fmt.Println(len(H.allKeys.Keys))
 }
 
 func track(msg string) (string, time.Time) {

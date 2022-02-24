@@ -8,21 +8,21 @@ import (
 )
 
 type HTTPSessionManager struct {
-	sync.RWMutex
-	*resty.Client
-	sync.WaitGroup
+	mutex     sync.Mutex
+	waitGroup sync.WaitGroup
 
-	cache *cache.Cache
-	ready bool
+	client *resty.Client
+	cache  *cache.Cache
+	ready  bool
 
-	Credentials      []LoginCredential
-	Logins           []LoginResponse
-	CurrentLoginKeys Keys
-	AllKeys          Keys
+	credentials      []LoginCredential
+	logins           []LoginResponse
+	currentLoginKeys Keys
+	allKeys          Keys
 
-	KeyIndex   int
+	keyIndex   int
 	StatusCode int
-	IP         string
+	iP         string
 }
 
 type LoginCredential struct {
@@ -91,7 +91,7 @@ type Status struct {
 }
 
 type ClientError struct {
-	error
+	Error   error
 	Reason  string      `json:"reason"`
 	Message string      `json:"message"`
 	Type    string      `json:"type"`
@@ -99,9 +99,9 @@ type ClientError struct {
 }
 
 func (c *ClientError) SetErr(err error) {
-	c.error = err
+	c.Error = err
 }
 
 func (c *ClientError) Err() error {
-	return c.error
+	return c.Error
 }

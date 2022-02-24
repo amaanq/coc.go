@@ -16,7 +16,7 @@ import (
 	"github.com/amaanq/coc.go/player"
 )
 
-func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) {
+func (h *HTTPSessionManager) request(route string, nested bool) ([]byte, error) {
 	if !h.ready {
 		return nil, fmt.Errorf("keys are not yet ready, wait a few seconds")
 	}
@@ -33,11 +33,11 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 	}
 
 	h.incrementIndex()
-	key := h.AllKeys.Keys[h.KeyIndex].Key
+	key := h.allKeys.Keys[h.keyIndex].Key
 
 	fmt.Println(url)
 
-	resp, err := h.R().
+	resp, err := h.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
 		SetHeader("authorization", fmt.Sprintf("Bearer %s", key)).
@@ -51,23 +51,23 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 			return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 		}
 		if strings.Contains(string(resp.Body()), "accessDenied.invalidIp") {
-			for _, credential := range h.Credentials {
-				err := h.Login(credential)
+			for _, credential := range h.credentials {
+				err := h.login(credential)
 				if err != nil {
 					return nil, err
 				}
 
-				err = h.GetKeys()
+				err = h.getKeys()
 				if err != nil {
 					return nil, err
 				}
 
-				err = h.UpdateKeys()
+				err = h.updateKeys()
 				if err != nil {
 					return nil, err
 				}
 			}
-			return h.Request(route, true)
+			return h.request(route, true)
 		}
 	}
 
@@ -85,16 +85,16 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 	return resp.Body(), nil
 }
 
-func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byte, error) {
+func (h *HTTPSessionManager) post(route string, body string, nested bool) ([]byte, error) {
 	if !h.ready {
 		return nil, fmt.Errorf("keys are not yet ready, wait a few seconds")
 	}
 	url := BaseUrl + route
 
 	h.incrementIndex()
-	key := h.AllKeys.Keys[h.KeyIndex].Key
+	key := h.allKeys.Keys[h.keyIndex].Key
 
-	resp, err := h.Client.R().
+	resp, err := h.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
 		SetHeader("authorization", fmt.Sprintf("Bearer %s", key)).
@@ -109,23 +109,23 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 			return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 		}
 		if strings.Contains(string(resp.Body()), "accessDenied.invalidIp") {
-			for _, credential := range h.Credentials {
-				err := h.Login(credential)
+			for _, credential := range h.credentials {
+				err := h.login(credential)
 				if err != nil {
 					return nil, err
 				}
 
-				err = h.GetKeys()
+				err = h.getKeys()
 				if err != nil {
 					return nil, err
 				}
 
-				err = h.UpdateKeys()
+				err = h.updateKeys()
 				if err != nil {
 					return nil, err
 				}
 			}
-			return h.Post(route, body, true)
+			return h.post(route, body, true)
 		}
 	}
 
@@ -148,7 +148,7 @@ func (h *HTTPSessionManager) SearchClans(args ...map[string]string) (ClanList *c
 		return nil, err
 	}
 
-	data, reqErr := h.Request(ClanEndpoint+params, false)
+	data, reqErr := h.request(ClanEndpoint+params, false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -166,7 +166,7 @@ func (h *HTTPSessionManager) GetClan(ClanTag string) (Clan *clan.Clan, err Clien
 	Clan = &clan.Clan{}
 	ClanTag = CorrectTag(ClanTag)
 
-	data, reqErr := h.Request(ClanEndpoint+"/"+url.PathEscape(ClanTag), false)
+	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -184,7 +184,7 @@ func (h *HTTPSessionManager) GetClanMembers(ClanTag string) (ClanMems []clan.Cla
 	ClanMems = []clan.ClanMember{}
 	ClanTag = CorrectTag(ClanTag)
 
-	data, reqErr := h.Request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/members/", false)
+	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/members/", false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -202,7 +202,7 @@ func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) (ClanWarLog *clan.War
 	ClanWarLog = &clan.WarLog{}
 	ClanTag = CorrectTag(ClanTag)
 
-	data, reqErr := h.Request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/warlog/", false)
+	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/warlog/", false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -220,7 +220,7 @@ func (h *HTTPSessionManager) GetClanCurrentWar(ClanTag string) (ClanWar *clan.Cu
 	ClanWar = &clan.CurrentWar{}
 	ClanTag = CorrectTag(ClanTag)
 
-	data, reqErr := h.Request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/currentwar/", false)
+	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/currentwar/", false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -250,7 +250,7 @@ func (h *HTTPSessionManager) GetPlayer(PlayerTag string) (Player *player.Player,
 	Player = &player.Player{}
 	PlayerTag = CorrectTag(PlayerTag)
 
-	data, reqErr := h.Request(PlayerEndpoint+"/"+url.PathEscape(PlayerTag), false)
+	data, reqErr := h.request(PlayerEndpoint+"/"+url.PathEscape(PlayerTag), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -269,7 +269,7 @@ func (h *HTTPSessionManager) VerifyPlayerToken(PlayerTag string, Token string) (
 	Verification = &player.Verification{}
 	PlayerTag = CorrectTag(PlayerTag)
 
-	data, reqErr := h.Post(PlayerEndpoint+"/"+url.PathEscape(PlayerTag)+"/verifytoken/", fmt.Sprintf(`{"token": "%s"}`, Token), false)
+	data, reqErr := h.post(PlayerEndpoint+"/"+url.PathEscape(PlayerTag)+"/verifytoken/", fmt.Sprintf(`{"token": "%s"}`, Token), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -289,7 +289,7 @@ func (h *HTTPSessionManager) VerifyPlayerToken(PlayerTag string, Token string) (
 
 func (h *HTTPSessionManager) GetLeagues(args ...map[string]string) (LeagueData *league.LeagueData, err ClientError) {
 	LeagueData = &league.LeagueData{}
-	data, reqErr := h.Request(LeagueEndpoint+parseArgs(args), false)
+	data, reqErr := h.request(LeagueEndpoint+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -305,7 +305,7 @@ func (h *HTTPSessionManager) GetLeagues(args ...map[string]string) (LeagueData *
 
 func (h *HTTPSessionManager) GetLeague(LeagueID string) (League *league.League, err ClientError) {
 	League = &league.League{}
-	data, reqErr := h.Request(LeagueEndpoint+"/"+LeagueID, false)
+	data, reqErr := h.request(LeagueEndpoint+"/"+LeagueID, false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -327,7 +327,7 @@ func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID league.LeagueID, args ...
 		LeagueID = league.LegendLeague
 	}
 
-	data, reqErr := h.Request(LeagueEndpoint+"/"+fmt.Sprint(LeagueID)+"/seasons"+parseArgs(args), false)
+	data, reqErr := h.request(LeagueEndpoint+"/"+fmt.Sprint(LeagueID)+"/seasons"+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -360,7 +360,7 @@ func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID league.LeagueID, Seaso
 		return nil, err
 	}
 
-	data, reqErr := h.Request(LeagueEndpoint+"/"+fmt.Sprint(LeagueID)+"/seasons/"+SeasonID+parseArgs(args), false)
+	data, reqErr := h.request(LeagueEndpoint+"/"+fmt.Sprint(LeagueID)+"/seasons/"+SeasonID+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -381,7 +381,7 @@ func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID league.LeagueID, Seaso
 //This should be passed ideally with nothing, kwargs aren't necessary here but only for the sake of completeness.
 func (h *HTTPSessionManager) GetLocations(args ...map[string]string) (LocationData *location.LocationData, err ClientError) {
 	LocationData = &location.LocationData{}
-	data, reqErr := h.Request(LocationEndpoint+parseArgs(args), false)
+	data, reqErr := h.request(LocationEndpoint+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -397,7 +397,7 @@ func (h *HTTPSessionManager) GetLocations(args ...map[string]string) (LocationDa
 
 func (h *HTTPSessionManager) GetLocation(LocationID location.LocationID) (Location *location.Location, err ClientError) {
 	Location = &location.Location{}
-	data, reqErr := h.Request(LocationEndpoint+"/"+fmt.Sprint(LocationID), false)
+	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -414,7 +414,7 @@ func (h *HTTPSessionManager) GetLocation(LocationID location.LocationID) (Locati
 // Main Village Clan Rankings
 func (h *HTTPSessionManager) GetLocationClans(LocationID location.LocationID, args ...map[string]string) (ClanData *location.ClanData, err ClientError) {
 	ClanData = &location.ClanData{}
-	data, reqErr := h.Request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/clans"+parseArgs(args), false)
+	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/clans"+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -431,7 +431,7 @@ func (h *HTTPSessionManager) GetLocationClans(LocationID location.LocationID, ar
 // Builder Hall Clan Rankings
 func (h *HTTPSessionManager) GetLocationClansVersus(LocationID location.LocationID, args ...map[string]string) (ClanVersusData *location.ClanVersusData, err ClientError) {
 	ClanVersusData = &location.ClanVersusData{}
-	data, reqErr := h.Request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/clans-versus"+parseArgs(args), false)
+	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/clans-versus"+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -448,7 +448,7 @@ func (h *HTTPSessionManager) GetLocationClansVersus(LocationID location.Location
 // Main Village Player Rankings
 func (h *HTTPSessionManager) GetLocationPlayers(LocationID location.LocationID, args ...map[string]string) (PlayerData *location.PlayerData, err ClientError) {
 	PlayerData = &location.PlayerData{}
-	data, reqErr := h.Request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/players"+parseArgs(args), false)
+	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/players"+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -465,7 +465,7 @@ func (h *HTTPSessionManager) GetLocationPlayers(LocationID location.LocationID, 
 // Builder Hall Player Rankings
 func (h *HTTPSessionManager) GetLocationPlayersVersus(LocationID location.LocationID, args ...map[string]string) (PlayerVersusData *location.PlayerVersusData, err ClientError) {
 	PlayerVersusData = &location.PlayerVersusData{}
-	data, reqErr := h.Request(LocationEndpoint+fmt.Sprint(LocationID)+"/rankings/players-versus", false)
+	data, reqErr := h.request(LocationEndpoint+fmt.Sprint(LocationID)+"/rankings/players-versus", false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -485,7 +485,7 @@ func (h *HTTPSessionManager) GetLocationPlayersVersus(LocationID location.Locati
 
 func (h *HTTPSessionManager) GetClanLabels(args ...map[string]string) (LabelsData *labels.LabelsData, err ClientError) {
 	LabelsData = &labels.LabelsData{}
-	data, reqErr := h.Request(LabelEndpoint+"/clans"+parseArgs(args), false)
+	data, reqErr := h.request(LabelEndpoint+"/clans"+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
@@ -501,7 +501,7 @@ func (h *HTTPSessionManager) GetClanLabels(args ...map[string]string) (LabelsDat
 
 func (h *HTTPSessionManager) GetPlayerLabels(args ...map[string]string) (LabelsData *labels.LabelsData, err ClientError) {
 	LabelsData = &labels.LabelsData{}
-	data, reqErr := h.Request(LabelEndpoint+"/players"+parseArgs(args), false)
+	data, reqErr := h.request(LabelEndpoint+"/players"+parseArgs(args), false)
 	if reqErr != nil {
 		err.SetErr(reqErr)
 		return nil, err
