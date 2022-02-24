@@ -15,15 +15,14 @@ type HTTPSessionManager struct {
 	cache *cache.Cache
 	ready bool
 
-	Credentials   []LoginCredential
-	KeyNames      string
-	KeyCount      int
-	CacheMaxSize  int
-	LoginResponse LoginResponse
-	KeysList      KeysList
-	RawKeysList   []Key
-	KeyIndex      int
-	IP            string
+	Credentials      []LoginCredential
+	Logins           []LoginResponse
+	CurrentLoginKeys Keys
+	AllKeys          Keys
+
+	KeyIndex   int
+	StatusCode int
+	IP         string
 }
 
 type LoginCredential struct {
@@ -60,15 +59,10 @@ type Developer struct {
 	PrevLoginUa   string      `json:"prevLoginUa"`
 }
 
-type KeyCreationResponse struct {
+type KeyResponse struct {
 	Status                  Status `json:"status"`
 	SessionExpiresInSeconds int64  `json:"sessionExpiresInSeconds"`
-	Key                     Key    `json:"key"`
-}
-
-type KeyDeletionResponse struct {
-	Status                  Status `json:"status"`
-	SessionExpiresInSeconds int64  `json:"sessionExpiresInSeconds"`
+	Key                     Key    `json:"key,omitempty"`
 }
 
 type Key struct {
@@ -84,10 +78,10 @@ type Key struct {
 	Key         string      `json:"key"`
 }
 
-type KeysList struct {
+type Keys struct {
+	Keys          []Key  `json:"keys"`
 	Status        Status `json:"status"`
 	SessionExpire int    `json:"sessionExpiresInSeconds"`
-	Keys          []Key  `json:"keys"`
 }
 
 type Status struct {

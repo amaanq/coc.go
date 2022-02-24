@@ -2,39 +2,55 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	//"sync"
+	"time"
 
 	"github.com/amaanq/coc.go/client"
 	"github.com/joho/godotenv"
 )
 
-func New(credentials map[string]string) *client.HTTPSessionManager {
-	return client.Initialize(credentials)
-}
-
 func main() {
 	godotenv.Load(".env")
 
-	client := New(map[string]string{os.Getenv("email"): os.Getenv("password"), os.Getenv("email2"): os.Getenv("password2"), os.Getenv("email3"): os.Getenv("password3")})
+	H, Herr := client.New(map[string]string{os.Getenv("email"): os.Getenv("password"), os.Getenv("email2"): os.Getenv("password2"), os.Getenv("email3"): os.Getenv("password3")})
+	if Herr != nil {
+		panic(Herr)
+	}
 
-	player, err := client.GetPlayer("#2PP")
+	defer duration(track("Login Time"))
+
+	fmt.Println(H.Logins)
+
+	player, err := H.GetPlayer("#2PP")
 	if err.Err() != nil {
 		fmt.Println(err.Err().Error())
 		panic(err.Err())
 	}
 	fmt.Println(player.Name)
 
-	clan, err := client.GetClan("#2PP")
+	clan, err := H.GetClan("#2PP")
 	if err.Err() != nil {
 		panic(err)
 	}
 	fmt.Println(clan.Name)
 
-	list, clientErr := client.SearchClans(map[string]string{"minClanLevel": "20"})
+	list, clientErr := H.SearchClans(map[string]string{"minClanLevel": "20"})
 	if clientErr.Err() != nil {
 		fmt.Println("msg", clientErr.Message)
 		panic(clientErr.Err())
 	}
 
 	fmt.Println(list.Clans[0])
+
+	fmt.Println(len(H.AllKeys.Keys))
+}
+
+func track(msg string) (string, time.Time) {
+	return msg, time.Now()
+}
+
+func duration(msg string, start time.Time) {
+	log.Printf("%v: %v\n", msg, time.Since(start))
 }

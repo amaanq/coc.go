@@ -32,14 +32,8 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		}
 	}
 
-	h.Lock()
-	key := h.RawKeysList[h.KeyIndex].Key
-	if h.KeyIndex == len(h.RawKeysList)-1 {
-		h.KeyIndex = 0
-	} else {
-		h.KeyIndex += 1
-	}
-	h.Unlock()
+	h.incrementIndex()
+	key := h.AllKeys.Keys[h.KeyIndex].Key
 
 	fmt.Println(url)
 
@@ -52,26 +46,25 @@ func (h *HTTPSessionManager) Request(route string, nested bool) ([]byte, error) 
 		return nil, err
 	}
 
-	fmt.Println(string(resp.Body()), resp.StatusCode())
-
 	if resp.StatusCode() == 403 {
 		if nested {
-			fmt.Println("hlo")
 			return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 		}
 		if strings.Contains(string(resp.Body()), "accessDenied.invalidIp") {
 			for _, credential := range h.Credentials {
-				err := h.APILopin(credential)
+				err := h.Login(credential)
 				if err != nil {
-					fmt.Println(err.Error())
+					return nil, err
 				}
+
 				err = h.GetKeys()
 				if err != nil {
-					fmt.Println(err.Error())
+					return nil, err
 				}
-				err = h.AddOrDeleteKeysAsNecessary(h.LoginResponse.Developer.ID)
+
+				err = h.UpdateKeys()
 				if err != nil {
-					fmt.Println(err.Error())
+					return nil, err
 				}
 			}
 			return h.Request(route, true)
@@ -98,33 +91,38 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 	}
 	url := BaseUrl + route
 
+	h.incrementIndex()
+	key := h.AllKeys.Keys[h.KeyIndex].Key
+
 	resp, err := h.Client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").
-		SetHeader("authorization", fmt.Sprintf("Bearer %s", h.RawKeysList[h.KeyIndex].Key)).
+		SetHeader("authorization", fmt.Sprintf("Bearer %s", key)).
 		SetBody(body).
 		Post(url)
-
 	if err != nil {
 		return nil, err
 	}
+
 	if resp.StatusCode() == 403 {
 		if nested {
 			return nil, fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 		}
 		if strings.Contains(string(resp.Body()), "accessDenied.invalidIp") {
 			for _, credential := range h.Credentials {
-				err := h.APILopin(credential)
+				err := h.Login(credential)
 				if err != nil {
-					fmt.Println(err.Error())
+					return nil, err
 				}
+
 				err = h.GetKeys()
 				if err != nil {
-					fmt.Println(err.Error())
+					return nil, err
 				}
-				err = h.AddOrDeleteKeysAsNecessary(h.LoginResponse.Developer.ID)
+
+				err = h.UpdateKeys()
 				if err != nil {
-					fmt.Println(err.Error())
+					return nil, err
 				}
 			}
 			return h.Post(route, body, true)
@@ -135,11 +133,6 @@ func (h *HTTPSessionManager) Post(route string, body string, nested bool) ([]byt
 		return nil, fmt.Errorf(string(resp.Body()))
 	}
 
-	if h.KeyIndex == len(h.RawKeysList)-1 {
-		h.KeyIndex = 0
-	} else {
-		h.KeyIndex += 1
-	}
 	return resp.Body(), nil
 }
 
