@@ -36,7 +36,7 @@ import (
     "github.com/amaanq/coc.go"
 )
 
-func main () {
+func main() {
     client, err := coc.New(map[string]string{"email": "password", "email2": "password2", "email3": "password3"})
     if err != nil {
         panic(err)
