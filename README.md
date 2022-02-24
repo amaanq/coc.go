@@ -30,10 +30,17 @@ even though nothing is logged or stored here. Initialize automatically logs into
 depending on your IP. You are able to login with multiple credentials in the event your application/project is large and draws a lot of users, key handling is done automatically for all logins. 
 
 ```go
-import "github.com/amaanq/coc.go"
-client, err := coc.New(map[string]string{"email": "password", "email2": "password2", "email3": "password3"})
-if err != nil {
-    panic(err)
+package main
+
+import (
+    "github.com/amaanq/coc.go"
+)
+
+func main () {
+    client, err := coc.New(map[string]string{"email": "password", "email2": "password2", "email3": "password3"})
+    if err != nil {
+        panic(err)
+    }
 }
 ```
 You can add as many logins as you want, but it'll be slower with more logins. 
