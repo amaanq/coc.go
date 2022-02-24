@@ -35,8 +35,6 @@ func (h *HTTPSessionManager) request(route string, nested bool) ([]byte, error) 
 	h.incrementIndex()
 	key := h.allKeys.Keys[h.keyIndex].Key
 
-	fmt.Println(url)
-
 	resp, err := h.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept", "application/json").

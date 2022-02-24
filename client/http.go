@@ -85,8 +85,6 @@ func (h *HTTPSessionManager) getKeys() error {
 	}
 
 	h.allKeys.Keys = append(h.allKeys.Keys, h.currentLoginKeys.Keys...)
-
-	fmt.Println("KEYLIST: ", string(resp.Body()))
 	return nil
 }
 
@@ -105,8 +103,6 @@ func (h *HTTPSessionManager) createKey() error {
 		return err
 	}
 
-	fmt.Println(DevBaseUrl + KeyCreateEndpoint)
-
 	if h.StatusCode = resp.StatusCode(); h.StatusCode != 200 {
 		return fmt.Errorf(string(resp.Body()))
 	}
@@ -117,8 +113,6 @@ func (h *HTTPSessionManager) createKey() error {
 	}
 
 	h.allKeys.Keys = append(h.allKeys.Keys, keycreationresponse.Key)
-
-	fmt.Println("Added key with ID", keycreationresponse.Key.ID)
 	return nil
 }
 
