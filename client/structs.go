@@ -91,7 +91,7 @@ type Status struct {
 }
 
 type ClientError struct {
-	Error   error
+	err     error
 	Reason  string      `json:"reason"`
 	Message string      `json:"message"`
 	Type    string      `json:"type"`
@@ -99,9 +99,9 @@ type ClientError struct {
 }
 
 func (c *ClientError) SetErr(err error) {
-	c.Error = err
+	c.err = err
 }
 
 func (c *ClientError) Err() error {
-	return c.Error
+	return c.err
 }
