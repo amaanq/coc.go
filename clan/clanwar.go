@@ -29,12 +29,13 @@ type WarClan struct {
 }
 
 type CurrentWar struct {
+	Result               Result  `json:"result"`
 	State                string  `json:"state"`
 	TeamSize             int     `json:"teamSize"`
 	AttacksPerMember     int     `json:"attacksPerMember"`
-	PreparationStartTime string  `json:"preparationStartTime"`
-	StartTime            string  `json:"startTime"`
-	EndTime              string  `json:"endTime"`
+	preparationStartTime string  `json:"preparationStartTime"`
+	startTime            string  `json:"startTime"`
+	endTime              string  `json:"endTime"`
 	Clan                 WarClan `json:"clan"`
 	Opponent             WarClan `json:"opponent"`
 }
@@ -66,6 +67,33 @@ const (
 	Tie  Result = "tie"
 	Win  Result = "win"
 )
+
+func (c *CurrentWar) Won() bool {
+	return c.Result == Win
+}
+
+func (c *CurrentWar) Lost() bool {
+	return c.Result == Lose
+}
+
+func (c *CurrentWar) Tied() bool {
+	return c.Result == Tie
+}
+
+func (c *CurrentWar) PreparationStartTime() time.Time {
+	parsed, _ := time.Parse("20060102T150405.999Z", c.preparationStartTime)
+	return parsed
+}
+
+func (c *CurrentWar) StartTime() time.Time {
+	parsed, _ := time.Parse("20060102T150405.999Z", c.startTime)
+	return parsed
+}
+
+func (c *CurrentWar) EndTime() time.Time {
+	parsed, _ := time.Parse("20060102T150405.999Z", c.endTime)
+	return parsed
+}
 
 func (w *War) Won() bool {
 	return w.Result == Win
