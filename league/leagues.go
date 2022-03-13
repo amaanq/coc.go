@@ -47,3 +47,7 @@ const (
 	TitanLeagueI
 	LegendLeague
 )
+
+var (
+	ErrInvalidLeague = "Only Legends League is supported with this. Deferring to 29000022 (aka league.LegendLeague). To avoid this message being printed again, pass in 29000022 (or league.LegendLeague) for the LeagueID argument."
+)

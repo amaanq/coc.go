@@ -359,7 +359,7 @@ func (h *HTTPSessionManager) GetLeague(LeagueID string) (League *league.League, 
 func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID league.LeagueID, args ...map[string]string) (SeasonData *league.SeasonData, err ClientError) {
 	SeasonData = &league.SeasonData{}
 	if LeagueID != league.LegendLeague {
-		fmt.Println("Only Legends League is supported with this. Deferring to 29000022. To avoid this message being printed again, pass in 29000022 for the LeagueID argument.")
+		fmt.Println(league.ErrInvalidLeague)
 		LeagueID = league.LegendLeague
 	}
 
@@ -381,7 +381,7 @@ func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID league.LeagueID, args ...
 func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID league.LeagueID, SeasonID string, args ...map[string]string) (SeasonInfo *league.SeasonInfo, err ClientError) {
 	SeasonInfo = &league.SeasonInfo{}
 	if LeagueID != league.LegendLeague {
-		fmt.Println("Only Legends League is supported with this. Deferring to 29000022. To avoid this message being printed again, pass in 29000022 for the LeagueID argument.")
+		fmt.Println(league.ErrInvalidLeague)
 		LeagueID = league.LegendLeague
 	}
 
