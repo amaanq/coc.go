@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Test(t *testing.T) {
+func TestClient(t *testing.T) {
 	godotenv.Load("../.env")
 
 	H, Herr := New(map[string]string{os.Getenv("email"): os.Getenv("password"), os.Getenv("email2"): os.Getenv("password2"), os.Getenv("email3"): os.Getenv("password3")})
@@ -44,6 +44,9 @@ func Test(t *testing.T) {
 	fmt.Println(list.Clans[0])
 
 	fmt.Println(len(H.allKeys.Keys))
+
+	players := H.GetPlayers([]string{"#2PP", "#8GG"})
+	fmt.Println(players[0].Achievements, players[1].BestTrophies)
 }
 
 func track(msg string) (string, time.Time) {

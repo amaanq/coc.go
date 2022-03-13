@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/amaanq/coc.go/clan"
@@ -142,18 +143,18 @@ func (h *HTTPSessionManager) SearchClans(args ...map[string]string) (ClanList *c
 	ClanList = &clan.ClanList{}
 	params := parseArgs(args)
 	if params == "" {
-		err.SetErr(fmt.Errorf("at least one filtering parameter must exist"))
+		err.setErr(fmt.Errorf("at least one filtering parameter must exist"))
 		return nil, err
 	}
 
 	data, reqErr := h.request(ClanEndpoint+params, false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, ClanList); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -166,12 +167,12 @@ func (h *HTTPSessionManager) GetClan(ClanTag string) (Clan *clan.Clan, err Clien
 
 	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, Clan); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -184,12 +185,12 @@ func (h *HTTPSessionManager) GetClanMembers(ClanTag string) (ClanMems []clan.Cla
 
 	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/members/", false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, &ClanMems); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -202,12 +203,12 @@ func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) (ClanWarLog *clan.War
 
 	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/warlog/", false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, ClanWarLog); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -220,12 +221,12 @@ func (h *HTTPSessionManager) GetClanCurrentWar(ClanTag string) (ClanWar *clan.Cu
 
 	data, reqErr := h.request(ClanEndpoint+"/"+url.PathEscape(ClanTag)+"/currentwar/", false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, ClanWar); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -250,16 +251,53 @@ func (h *HTTPSessionManager) GetPlayer(PlayerTag string) (Player *player.Player,
 
 	data, reqErr := h.request(PlayerEndpoint+"/"+url.PathEscape(PlayerTag), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, Player); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
 	return
+}
+
+// A slice of players will be returned with no error, however players that had an error (i.e are banned or the tag never existed)
+// will be nil inside the slice. The order of the player tags is kept intact.
+func (h *HTTPSessionManager) GetPlayers(PlayerTags []string) []*player.Player {
+	Players := make([]*player.Player, len(PlayerTags))
+	PlayerMap := make(map[string]*player.Player)
+
+	for idx, tag := range PlayerTags { // correct all tags to check with the map later
+		PlayerTags[idx] = CorrectTag(tag)
+	}
+
+	var playerWg sync.WaitGroup
+	var playerMapMutex sync.Mutex
+
+	playerWg.Add(len(PlayerTags))
+	for _, tag := range PlayerTags {
+		go func(t string) {
+			defer playerWg.Done()
+			player, err := h.GetPlayer(t)
+			if err.Err() != nil {
+				playerMapMutex.Lock()
+				PlayerMap[t] = nil
+				playerMapMutex.Unlock()
+				return
+			}
+			playerMapMutex.Lock()
+			PlayerMap[t] = player
+			playerMapMutex.Unlock()
+		}(tag)
+	}
+	playerWg.Wait()
+
+	for i, tag := range PlayerTags {
+		Players[i] = PlayerMap[tag]
+	}
+	return Players
 }
 
 // Side note: This is the only POST method for the API so far
@@ -269,12 +307,12 @@ func (h *HTTPSessionManager) VerifyPlayerToken(PlayerTag string, Token string) (
 
 	data, reqErr := h.post(PlayerEndpoint+"/"+url.PathEscape(PlayerTag)+"/verifytoken/", fmt.Sprintf(`{"token": "%s"}`, Token), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, Verification); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -289,12 +327,12 @@ func (h *HTTPSessionManager) GetLeagues(args ...map[string]string) (LeagueData *
 	LeagueData = &league.LeagueData{}
 	data, reqErr := h.request(LeagueEndpoint+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, LeagueData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -305,12 +343,12 @@ func (h *HTTPSessionManager) GetLeague(LeagueID string) (League *league.League, 
 	League = &league.League{}
 	data, reqErr := h.request(LeagueEndpoint+"/"+LeagueID, false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, League); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -327,12 +365,12 @@ func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID league.LeagueID, args ...
 
 	data, reqErr := h.request(LeagueEndpoint+"/"+fmt.Sprint(LeagueID)+"/seasons"+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, SeasonData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -349,23 +387,23 @@ func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID league.LeagueID, Seaso
 
 	match, matchErr := regexp.MatchString("^20[0-2][0-9]-((0[1-9])|(1[0-2]))$", SeasonID)
 	if matchErr != nil {
-		err.SetErr(matchErr)
+		err.setErr(matchErr)
 		return nil, err
 	}
 
 	if !match {
-		err.SetErr(fmt.Errorf("invalid season format, format must match the YYYY-MM date format"))
+		err.setErr(fmt.Errorf("invalid season format, format must match the YYYY-MM date format"))
 		return nil, err
 	}
 
 	data, reqErr := h.request(LeagueEndpoint+"/"+fmt.Sprint(LeagueID)+"/seasons/"+SeasonID+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, SeasonInfo); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -381,12 +419,12 @@ func (h *HTTPSessionManager) GetLocations(args ...map[string]string) (LocationDa
 	LocationData = &location.LocationData{}
 	data, reqErr := h.request(LocationEndpoint+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, LocationData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -397,12 +435,12 @@ func (h *HTTPSessionManager) GetLocation(LocationID location.LocationID) (Locati
 	Location = &location.Location{}
 	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, Location); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -414,12 +452,12 @@ func (h *HTTPSessionManager) GetLocationClans(LocationID location.LocationID, ar
 	ClanData = &location.ClanData{}
 	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/clans"+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, ClanData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -431,12 +469,12 @@ func (h *HTTPSessionManager) GetLocationClansVersus(LocationID location.Location
 	ClanVersusData = &location.ClanVersusData{}
 	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/clans-versus"+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, ClanVersusData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -448,12 +486,12 @@ func (h *HTTPSessionManager) GetLocationPlayers(LocationID location.LocationID, 
 	PlayerData = &location.PlayerData{}
 	data, reqErr := h.request(LocationEndpoint+"/"+fmt.Sprint(LocationID)+"/rankings/players"+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, PlayerData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -465,12 +503,12 @@ func (h *HTTPSessionManager) GetLocationPlayersVersus(LocationID location.Locati
 	PlayerVersusData = &location.PlayerVersusData{}
 	data, reqErr := h.request(LocationEndpoint+fmt.Sprint(LocationID)+"/rankings/players-versus", false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, PlayerVersusData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -485,12 +523,12 @@ func (h *HTTPSessionManager) GetClanLabels(args ...map[string]string) (LabelsDat
 	LabelsData = &labels.LabelsData{}
 	data, reqErr := h.request(LabelEndpoint+"/clans"+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, LabelsData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}
@@ -501,12 +539,12 @@ func (h *HTTPSessionManager) GetPlayerLabels(args ...map[string]string) (LabelsD
 	LabelsData = &labels.LabelsData{}
 	data, reqErr := h.request(LabelEndpoint+"/players"+parseArgs(args), false)
 	if reqErr != nil {
-		err.SetErr(reqErr)
+		err.setErr(reqErr)
 		return nil, err
 	}
 
 	if jsonErr := json.Unmarshal(data, LabelsData); jsonErr != nil {
-		err.SetErr(jsonErr)
+		err.setErr(jsonErr)
 		json.Unmarshal(data, &err)
 		return nil, err
 	}

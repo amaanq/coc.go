@@ -3,11 +3,12 @@ package clan
 import "time"
 
 type WarLog struct {
-	Items []War `json:"items"`
+	Log []War `json:"items"`
 }
 
 type War struct {
 	Result           Result  `json:"result"`
+	startTime        string  `json:"startTime"`
 	endTime          string  `json:"endTime"`
 	TeamSize         int     `json:"teamSize"`
 	AttacksPerMember int     `json:"attacksPerMember"`
@@ -65,6 +66,23 @@ const (
 	Tie  Result = "tie"
 	Win  Result = "win"
 )
+
+func (w *War) Won() bool {
+	return w.Result == Win
+}
+
+func (w *War) Lost() bool {
+	return w.Result == Lose
+}
+
+func (w *War) Tied() bool {
+	return w.Result == Tie
+}
+
+func (w *War) StartTime() time.Time {
+	parsed, _ := time.Parse("20060102T150405.999Z", w.startTime)
+	return parsed
+}
 
 func (w *War) EndTime() time.Time {
 	parsed, _ := time.Parse("20060102T150405.999Z", w.endTime)
