@@ -2,6 +2,10 @@ package league
 
 type LeagueID int
 
+func (l LeagueID) Valid() bool {
+	return l >= Unranked && l <= LegendLeague
+}
+
 type LeagueData struct {
 	Leagues []League `json:"items,omitempty"`
 	Paging  struct {
@@ -47,6 +51,7 @@ const (
 	TitanLeagueI
 	LegendLeague
 )
+
 
 var (
 	ErrInvalidLeague = "Only Legends League is supported with this. Deferring to 29000022 (aka league.LegendLeague). To avoid this message being printed again, pass in 29000022 (or league.LegendLeague) for the LeagueID argument."

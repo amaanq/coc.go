@@ -1,5 +1,24 @@
 package clan
 
+type WarFrequency string
+
+const (
+	Always       WarFrequency = "always"
+	TwicePerWeek WarFrequency = "moreThanOncePerWeek"
+	OncePerWeek  WarFrequency = "oncePerWeek"
+	Rarely       WarFrequency = "lessThanOncePerWeek"
+	Never        WarFrequency = "never"
+	NotSet       WarFrequency = "unknown" // Doesn't seem to work..
+)
+
+func (w WarFrequency) Valid() bool {
+	switch w {
+	case Always, TwicePerWeek, OncePerWeek, Rarely, Never, NotSet:
+		return true
+	}
+	return false
+}
+
 type Clan struct {
 	Tag                    string       `json:"tag"`
 	Name                   string       `json:"name"`
@@ -11,7 +30,7 @@ type Clan struct {
 	ClanPoints             int          `json:"clanPoints"`
 	ClanVersusPoints       int          `json:"clanVersusPoints"`
 	RequiredTrophies       int          `json:"requiredTrophies"`
-	WarFrequency           string       `json:"warFrequency"`
+	WarFrequency           WarFrequency `json:"warFrequency"`
 	WarWinStreak           int          `json:"warWinStreak"`
 	WarWins                int          `json:"warWins"`
 	WarTies                int          `json:"warTies"`
@@ -95,8 +114,22 @@ type WarLeague struct {
 type Role string
 
 const (
-	AdminRole    Role = "admin"
-	CoLeaderRole Role = "coLeader"
-	LeaderRole   Role = "leader"
-	MemberRole   Role = "member"
+	Elder    Role = "admin"
+	CoLeader Role = "coLeader"
+	Leader   Role = "leader"
+	Member   Role = "member"
 )
+
+func (r Role) String() string {
+	switch r {
+	case Elder:
+		return "Elder"
+	case CoLeader:
+		return "CoLeader"
+	case Leader:
+		return "Leader"
+	case Member:
+		return "Member"
+	}
+	return ""
+}

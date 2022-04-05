@@ -1,6 +1,10 @@
 package location
 
-type LocationID int 
+type LocationID int
+
+func (l LocationID) Valid() bool {
+	return l >= Europe && l <= Zimbabwe
+}
 
 type LocationData struct {
 	Locations []Location `json:"items,omitempty"`

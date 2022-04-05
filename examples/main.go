@@ -13,10 +13,9 @@ func main() {
 	}
 
 	player, err := client.GetPlayer("#2PP")
-	if err.Err() != nil {
-		fmt.Println(err.Message)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
 	fmt.Println("Player name: ", player.Name)
-	client.SearchClans()
 }

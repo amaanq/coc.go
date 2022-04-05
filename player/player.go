@@ -1,7 +1,9 @@
 package player
 
+import "github.com/amaanq/coc.go/tag"
+
 type Player struct {
-	Tag                  string           `json:"tag"`
+	Tag                  tag.PlayerTag    `json:"tag"`
 	Name                 string           `json:"name"`
 	TownHallLevel        int              `json:"townHallLevel"`
 	TownHallWeaponLevel  int              `json:"townHallWeaponLevel"`
@@ -41,10 +43,10 @@ type Achievement struct {
 }
 
 type Clan struct {
-	Tag       string    `json:"tag"`
-	Name      string    `json:"name"`
-	ClanLevel int       `json:"clanLevel"`
-	BadgeUrls BadgeUrls `json:"badgeUrls"`
+	Tag       tag.ClanTag `json:"tag"`
+	Name      string      `json:"name"`
+	ClanLevel int         `json:"clanLevel"`
+	BadgeUrls BadgeUrls   `json:"badgeUrls"`
 }
 
 type BadgeUrls struct {

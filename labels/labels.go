@@ -2,7 +2,15 @@ package labels
 
 type PlayerLabelID int
 
+func (p PlayerLabelID) Valid() bool {
+	return p >= PlayerLabelClanWars && p <= PlayerLabelAmateurAttacker
+}
+
 type ClanLabelID int
+
+func (c ClanLabelID) Valid() bool {
+	return c >= ClanLabelClanWars && c <= ClanLabelNewbieFriendly
+}
 
 type LabelsData struct {
 	Labels []Label `json:"items,omitempty"`
