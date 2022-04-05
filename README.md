@@ -70,7 +70,7 @@ func main() {
 
   fmt.Printf("Player: %+v\n", player)
   fmt.Println("My name is: ", player.Name)
-  
+
   //Same for a clan: 
 
   clan, err := APIClient.GetClan("#YourTag")
@@ -116,7 +116,7 @@ func main() {
       }
   }
 
-  leagues, err := APIClient.GetLeagues(options: SearchOptions().SetLimit(10).SetAfter(2))
+  leagues, err := APIClient.GetLeagues(client.SearchOptions().SetLimit(10).SetAfter(2))
   if err != nil {
     // handle err 
   }
