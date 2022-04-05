@@ -39,10 +39,59 @@ func TestHTTPSessionManager_GetPlayer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer duration(track("GET " + tt.args.PlayerTag + " Time"))
+			defer duration(track("GET Player " + tt.args.PlayerTag + " Time"))
 			_, err := DummyClient.GetPlayer(tt.args.PlayerTag)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTTPSessionManager.GetPlayer() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestHTTPSessionManager_SearchClans(t *testing.T) {
+	type args struct {
+		options *clanSearchOptions
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{name: "Test", args: args{options: ClanSearchOptions().SetName("test").SetLimit(10).SetMaxMembers(40)}, wantErr: false},
+		{name: "Test Caching", args: args{options: ClanSearchOptions().SetName("test").SetLimit(10).SetMaxMembers(40)}, wantErr: false},
+		{name: "Test Caching Unordered", args: args{options: ClanSearchOptions().SetName("test").SetMaxMembers(40).SetLimit(10)}, wantErr: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer duration(track("GET Search Clans " + tt.args.options.ToQuery() + " Time"))
+			_, err := DummyClient.SearchClans(tt.args.options)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("HTTPSessionManager.SearchClans() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestHTTPSessionManager_GetLeagues(t *testing.T) {
+	type args struct {
+		options *searchOptions
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{name: "Test", args: args{options: SearchOptions().SetLimit(10).SetAfter(2)}, wantErr: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer duration(track("GET Leagues " + tt.args.options.ToQuery() + " Time"))
+			_, err := DummyClient.GetLeagues(tt.args.options)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("HTTPSessionManager.GetLeagues() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})

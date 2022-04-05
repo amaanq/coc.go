@@ -32,7 +32,7 @@ func (s *searchOptions) SetLimit(limit int) *searchOptions {
 
 // Automatically converts to clash base64 json
 func (s *searchOptions) SetBefore(before int) *searchOptions {
-	if before < 0 {
+	if before < 0 || s.after != "" {
 		return s
 	}
 	s.before = Base64String(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`{"pos": %d}`, before))))
@@ -41,7 +41,7 @@ func (s *searchOptions) SetBefore(before int) *searchOptions {
 
 // Automatically converts to clash base64 json
 func (s *searchOptions) SetAfter(after int) *searchOptions {
-	if after < 0 {
+	if after < 0 || s.before != "" {
 		return s
 	}
 	s.after = Base64String(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`{"pos": %d}`, after))))
@@ -154,7 +154,7 @@ func (c *clanSearchOptions) SetLimit(limit int) *clanSearchOptions {
 
 // Automatically converts to clash base64 json
 func (c *clanSearchOptions) SetBefore(before int) *clanSearchOptions {
-	if before < 0 {
+	if before < 0 || c.after != "" {
 		return c
 	}
 	c.before = Base64String(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`{"pos": %d}`, before))))
@@ -163,7 +163,7 @@ func (c *clanSearchOptions) SetBefore(before int) *clanSearchOptions {
 
 // Automatically converts to clash base64 json
 func (c *clanSearchOptions) SetAfter(after int) *clanSearchOptions {
-	if after < 0 {
+	if after < 0 || c.before != "" {
 		return c
 	}
 	c.after = Base64String(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`{"pos": %d}`, after))))
