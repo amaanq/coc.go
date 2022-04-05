@@ -56,12 +56,11 @@ the only documentation available.
 There are 4 main types of endpoints for the API. Player, Clan, Location, and League. Minor ones are label and goldpass.
 At the moment the CWL endpoints have yet to be implemented since I don't have sample json to base the structs off of yet. This will be done next cwl. 
 
-⚠️**WARNING:** Errors returned by API methods are a custom error type. To access the underlying error, use err.Err(). To access the message from the error, use err.Message.
 
 Here's how you can fetch player data and display it to your terminal.
 ```go
 player, err := client.GetPlayer("#YourTag")
-if err.Err() != nil {
+if err != nil {
   panic(err)
 }
 
@@ -72,7 +71,7 @@ fmt.Println("My name is: ", player.Name)
 Same for a clan: 
 ```go
 clan, err := client.GetClan("#YourTag")
-if err.Err() != nil {
+if err != nil {
   panic(err)
 }
 
@@ -89,7 +88,7 @@ that make use of it. As such, if you want to specify arguments to SearchClans, d
 clans, err := client.SearchClans(map[string]string{"name": "hey", "minLevel": "10"})
 //which is the same as:
 clans, err := client.SearchClans(map[string]string{"name": "hey"}, map[string]string{"minLevel": "10"})
-if err.Err() != nil {
+if err != nil {
     panic(err)
 }
 
