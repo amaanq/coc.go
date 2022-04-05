@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/patrickmn/go-cache"
 )
 
 type HTTPSessionManager struct {
@@ -12,7 +11,6 @@ type HTTPSessionManager struct {
 	waitGroup sync.WaitGroup
 
 	client *resty.Client
-	cache  *cache.Cache
 	ready  bool
 
 	credentials      []LoginCredential
@@ -90,18 +88,18 @@ type Status struct {
 	Detail  interface{} `json:"detail"`
 }
 
-type ClientError struct {
-	err     error
-	Reason  string      `json:"reason"`
-	Message string      `json:"message"`
-	Type    string      `json:"type"`
-	Detail  interface{} `json:"detail"`
-}
+// type ClientError struct {
+// 	err     error
+// 	Reason  string      `json:"reason"`
+// 	Message string      `json:"message"`
+// 	Type    string      `json:"type"`
+// 	Detail  interface{} `json:"detail"`
+// }
 
-func (c *ClientError) setErr(err error) {
-	c.err = err
-}
+// func (c *ClientError) setErr(err error) {
+// 	c.err = err
+// }
 
-func (c *ClientError) Err() error {
-	return c.err
-}
+// func (c *ClientError) Err() error {
+// 	return c.err
+// }

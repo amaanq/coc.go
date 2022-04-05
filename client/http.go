@@ -1,12 +1,10 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/patrickmn/go-cache"
 )
 
 func New(credentials ...map[string]string) (*HTTPSessionManager, error) {
@@ -22,7 +20,6 @@ func New(credentials ...map[string]string) (*HTTPSessionManager, error) {
 		logins:      make([]LoginResponse, 0),
 		keyIndex:    0,
 		ready:       true,
-		cache:       cache.New(time.Second*60, time.Second*60),
 	}
 
 	for _, credential := range H.credentials {
@@ -208,12 +205,6 @@ func (h *HTTPSessionManager) getiP() error {
 
 	h.iP = string(resp.Body())
 	return nil
-}
-
-func (h *HTTPSessionManager) DebugViewKeys() {
-	for _, key := range h.allKeys.Keys {
-		fmt.Println("[Key] ", key.Key, "[ID]", key.ID, key.Name, key.Cidrranges, key.Developerid, key.Description)
-	}
 }
 
 func removeKey(keylist []Key, deleteKey Key) []Key {
