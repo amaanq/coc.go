@@ -23,6 +23,10 @@ func (p PlayerTag) OpenInGameURL() string {
 	return "https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=" + url.PathEscape(string(p))
 }
 
+func (p PlayerTag) String() string {
+	return string(p)
+}
+
 type ClanTag string
 
 func ToClanTag(tag string) ClanTag {
@@ -38,4 +42,8 @@ func (c ClanTag) CorrectTag() ClanTag {
 
 func (c ClanTag) OpenInGameURL() string {
 	return "https://link.clashofclans.com/en?action=OpenClanProfile&tag=" + url.PathEscape(string(c))
+}
+
+func (c ClanTag) String() string {
+	return string(c)
 }
