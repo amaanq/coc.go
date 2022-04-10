@@ -1,18 +1,14 @@
 package client
 
 import (
-	"bytes"
 	"errors"
-	"io/ioutil"
 	"sync"
 	"time"
-
-	"github.com/andybalholm/brotli"
 	// badger "github.com/dgraph-io/badger/v3"
 ) // fuck badger
 
 var (
-	cache = make(map[string][]byte)
+	cache     = make(map[string][]byte)
 	cacheLock sync.RWMutex
 )
 
@@ -31,19 +27,14 @@ func getFromCache(key string) ([]byte, error) {
 	data, ok := cache[key]
 	cacheLock.RUnlock()
 	if ok {
-		data, err := readFromBrotli(data)
-		return data, err
+		return data, nil
 	}
 	return nil, errors.New("not in cache")
 }
 
 func writeToCache(key string, data []byte, duration int) error {
-	brot, err := writeToBrotli(data)
-	if err != nil {
-		return err 
-	}
 	cacheLock.Lock()
-	cache[key] = brot
+	cache[key] = data
 	cacheLock.Unlock()
 	if duration > 0 {
 		go func() {
@@ -56,23 +47,22 @@ func writeToCache(key string, data []byte, duration int) error {
 	return nil
 }
 
-func writeToBrotli(data []byte) ([]byte, error) {
-	buf := bytes.NewBuffer(nil)
-	writer := brotli.NewWriter(buf)
-	_, err := writer.Write(data)
-	if err != nil {
-		return nil, err
-	}
-	writer.Close()
-	return buf.Bytes(), nil
-}
+// func writeToBrotli(data []byte) ([]byte, error) {
+// 	buf := bytes.NewBuffer(nil)
+// 	writer := brotli.NewWriter(buf)
+// 	_, err := writer.Write(data)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	writer.Close()
+// 	return buf.Bytes(), nil
+// }
 
-func readFromBrotli(brotData []byte) ([]byte, error) {
-	buf := bytes.NewReader(brotData)
-	reader := brotli.NewReader(buf)
-	return ioutil.ReadAll(reader)
-}
-
+// func readFromBrotli(brotData []byte) ([]byte, error) {
+// 	buf := bytes.NewReader(brotData)
+// 	reader := brotli.NewReader(buf)
+// 	return ioutil.ReadAll(reader)
+// }
 
 // func getFromCache(url string) ([]byte, error) {
 // 	var valCopy []byte
