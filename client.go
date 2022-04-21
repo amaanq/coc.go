@@ -81,9 +81,8 @@ func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte
 				if err != nil {
 					return nil, err
 				}
-
-				return h.do(method, route, body, true)
 			}
+			return h.do(method, route, body, true)
 		}
 	}
 
