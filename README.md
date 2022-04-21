@@ -61,6 +61,9 @@ At the moment the CWL endpoints have yet to be implemented since I don't have sa
 
 Here's how you can fetch player data and display it to your terminal.
 ```go
+import (
+    "github.com/amaanq/coc.go"
+)
 // Obviously load a client first...
 func main() {
   player, err := APIClient.GetPlayer("#YourTag")
@@ -96,14 +99,14 @@ func main() {
 
 ```go
 import (
-  "github.com/amaanq/coc.go/client"
+    "github.com/amaanq/coc.go"
 )
 
 // Obviously load a client first...
 func main() {
-  clans, err := APIClient.SearchClans(client.ClanSearchOptions().SetName("test").SetLimit(10).SetMaxMembers(40))
+  clans, err := APIClient.SearchClans(coc.ClanSearchOptions().SetName("test").SetLimit(10).SetMaxMembers(40))
   // which is the same as this (different order of setting)
-  // clans, err := APIClient.SearchClans(client.ClanSearchOptions().SetName("test").SetMaxMembers(40).SetLimit(10))
+  // clans, err := APIClient.SearchClans(coc.ClanSearchOptions().SetName("test").SetMaxMembers(40).SetLimit(10))
   if err != nil {
       // handle err 
   }
@@ -116,7 +119,7 @@ func main() {
       }
   }
 
-  leagues, err := APIClient.GetLeagues(client.SearchOptions().SetLimit(10).SetAfter(2))
+  leagues, err := APIClient.GetLeagues(coc.SearchOptions().SetLimit(10).SetAfter(2))
   if err != nil {
     // handle err 
   }
@@ -126,18 +129,8 @@ You can enter the map[string]string args as one map with several key-value pairs
 Enter every data type as a string, even ints. You can also leave the map empty, this is acceptable but some functions will error as one argument is required (SearchClans being one).
 
 
-## Short-Hand Links to each Package in this Module
+## Subdirectories
 
-* [clan](./clan)
-
-* [client](./client)
-
-* [labels](./labels)
-
-* [league](./league)
-
-* [location](./location)
-
-* [player](./player)
+* [examples](./examples)
 
 ---
