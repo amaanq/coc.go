@@ -21,7 +21,7 @@ func (w WarFrequency) Valid() bool {
 }
 
 type Clan struct {
-	Tag                    string       `json:"tag,omitempty"`
+	Tag                    ClanTag       `json:"tag,omitempty"`
 	Name                   string       `json:"name,omitempty"`
 	Type                   string       `json:"type,omitempty"`
 	Description            string       `json:"description,omitempty"`
@@ -52,7 +52,7 @@ type ClanMembers struct {
 }
 
 type ClanMember struct {
-	Tag               string `json:"tag"`
+	Tag               PlayerTag `json:"tag"`
 	Name              string `json:"name"`
 	Role              Role   `json:"role"`
 	ExpLevel          int    `json:"expLevel"`

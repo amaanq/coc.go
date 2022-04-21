@@ -10,7 +10,7 @@ type ClanRankingList struct {
 }
 
 type ClanRanking struct {
-	Tag          string   `json:"tag,omitempty"`
+	Tag          ClanTag  `json:"tag,omitempty"`
 	Name         string   `json:"name,omitempty"`
 	ClanPoints   int      `json:"clanPoints,omitempty"`
 	ClanLevel    int      `json:"clanLevel,omitempty"`
@@ -31,7 +31,7 @@ type PlayerRankingList struct {
 }
 
 type PlayerRanking struct {
-	Tag          string            `json:"tag,omitempty"`
+	Tag          PlayerTag         `json:"tag,omitempty"`
 	Name         string            `json:"name,omitempty"`
 	ExpLevel     int               `json:"expLevel,omitempty"`
 	Rank         int               `json:"rank,omitempty"`
@@ -44,7 +44,7 @@ type PlayerRanking struct {
 }
 
 type PlayerRankingClan struct {
-	Tag       string   `json:"tag,omitempty"`
+	Tag       ClanTag  `json:"tag,omitempty"`
 	Name      string   `json:"name,omitempty"`
 	BadgeURLs IconURLs `json:"badgeUrls,omitempty"`
 }
@@ -59,7 +59,7 @@ type ClanVersusRankingList struct {
 }
 
 type ClanVersusRanking struct {
-	Tag              string   `json:"tag,omitempty"`
+	Tag              ClanTag  `json:"tag,omitempty"`
 	Name             string   `json:"name,omitempty"`
 	ClanVersusPoints int      `json:"clanVersusPoints,omitempty"`
 	ClanLevel        int      `json:"clanLevel,omitempty"`
@@ -80,7 +80,7 @@ type PlayerVersusRankingList struct {
 }
 
 type PlayerVersusRanking struct {
-	Tag            string            `json:"tag,omitempty"`
+	Tag            PlayerTag         `json:"tag,omitempty"`
 	Name           string            `json:"name,omitempty"`
 	ExpLevel       int               `json:"expLevel,omitempty"`
 	Rank           int               `json:"rank,omitempty"`

@@ -21,7 +21,7 @@ type War struct {
 }
 
 type WarClan struct {
-	Tag                   string      `json:"tag"`
+	Tag                   ClanTag     `json:"tag"`
 	Name                  string      `json:"name"`
 	BadgeURLs             IconURLs    `json:"badgeUrls"`
 	ClanLevel             int         `json:"clanLevel"`
@@ -44,7 +44,7 @@ type CurrentWar struct {
 }
 
 type WarMember struct {
-	Tag                string      `json:"tag"`
+	Tag                PlayerTag   `json:"tag"`
 	Name               string      `json:"name"`
 	TownhallLevel      int         `json:"townhallLevel"`
 	MapPosition        int         `json:"mapPosition"`
@@ -54,12 +54,12 @@ type WarMember struct {
 }
 
 type WarAttack struct {
-	AttackerTag           string `json:"attackerTag"`
-	DefenderTag           string `json:"defenderTag"`
-	Stars                 int    `json:"stars"`
-	DestructionPercentage int    `json:"destructionPercentage"`
-	Order                 int    `json:"order"`
-	Duration              int    `json:"duration"`
+	AttackerTag           PlayerTag `json:"attackerTag"`
+	DefenderTag           PlayerTag `json:"defenderTag"`
+	Stars                 int       `json:"stars"`
+	DestructionPercentage int       `json:"destructionPercentage"`
+	Order                 int       `json:"order"`
+	Duration              int       `json:"duration"`
 }
 
 type Result string

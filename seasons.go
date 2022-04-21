@@ -17,12 +17,12 @@ type SeasonInfo struct {
 }
 
 type RankedPlayer struct {
-	Tag         string `json:"tag,omitempty"`
-	Name        string `json:"name,omitempty"`
-	ExpLevel    int64  `json:"expLevel,omitempty"`
-	Trophies    int64  `json:"trophies,omitempty"`
-	AttackWins  int64  `json:"attackWins,omitempty"`
-	DefenseWins int64  `json:"defenseWins,omitempty"`
-	Rank        int64  `json:"rank,omitempty"`
-	Clan        Clan   `json:"clan,omitempty"`
+	Tag         PlayerTag `json:"tag,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	ExpLevel    int64     `json:"expLevel,omitempty"`
+	Trophies    int64     `json:"trophies,omitempty"`
+	AttackWins  int64     `json:"attackWins,omitempty"`
+	DefenseWins int64     `json:"defenseWins,omitempty"`
+	Rank        int64     `json:"rank,omitempty"`
+	Clan        Clan      `json:"clan,omitempty"`
 }
