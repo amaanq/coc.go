@@ -14,7 +14,7 @@ type WarLeagueData struct {
 }
 
 type WarLeague struct {
-	ID       int64    `json:"id,omitempty"`
+	ID       int      `json:"id,omitempty"`
 	Name     string   `json:"name,omitempty"`
 	IconUrls IconURLs `json:"iconUrls,omitempty"`
 }

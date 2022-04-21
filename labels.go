@@ -26,14 +26,11 @@ func (c ClanLabelID) Valid() bool {
 
 type LabelsData struct {
 	Labels []Label `json:"items,omitempty"`
-	Paging struct {
-		Cursors struct {
-		} `json:"cursors,omitempty"`
-	} `json:"paging,omitempty"`
+	Paging Paging  `json:"paging,omitempty"`
 }
 
 type Label struct {
-	ID       int64    `json:"id,omitempty"`
+	ID       int      `json:"id,omitempty"`
 	Name     string   `json:"name,omitempty"`
 	IconUrls IconURLs `json:"iconUrls,omitempty"`
 }

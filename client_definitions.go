@@ -30,7 +30,7 @@ type LoginCredential struct {
 
 type LoginResponse struct {
 	Status                  Status    `json:"status"`
-	SessionExpiresInSeconds int64     `json:"sessionExpiresInSeconds"`
+	SessionExpiresInSeconds int       `json:"sessionExpiresInSeconds"`
 	Auth                    Auth      `json:"auth"`
 	Developer               Developer `json:"developer"`
 	TemporaryAPIToken       string    `json:"temporaryAPIToken"`
@@ -59,7 +59,7 @@ type Developer struct {
 
 type KeyResponse struct {
 	Status                  Status `json:"status"`
-	SessionExpiresInSeconds int64  `json:"sessionExpiresInSeconds"`
+	SessionExpiresInSeconds int    `json:"sessionExpiresInSeconds"`
 	Key                     Key    `json:"key,omitempty"`
 }
 
@@ -83,7 +83,7 @@ type Keys struct {
 }
 
 type Status struct {
-	Code    int64       `json:"code,omitempty"`
+	Code    int         `json:"code,omitempty"`
 	Message string      `json:"message,omitempty"`
 	Detail  interface{} `json:"detail"`
 }
