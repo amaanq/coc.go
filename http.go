@@ -27,14 +27,14 @@ func newClient(credentials map[string]string) (*Client, error) {
 	}
 	H.getIP()
 
-	for _, account := range H.accounts {
-		err := account.login(H.client)
+	for index := range H.accounts {
+		err := H.accounts[index].login(H.client)
 		if err != nil {
 			return nil, err
 		}
 
 		// This calls getKeys() anyways
-		err = account.updateKeys(H.ipAddress, H.client)
+		err = H.accounts[index].updateKeys(H.ipAddress, H.client)
 		if err != nil {
 			return nil, err
 		}
@@ -61,8 +61,6 @@ func (a *APIAccount) login(client *resty.Client) error {
 		return err
 	}
 
-	fmt.Println(a.Response)
-
 	return nil
 }
 
@@ -81,8 +79,6 @@ func (a *APIAccount) getKeys(client *resty.Client) error {
 	if err = json.Unmarshal(resp.Body(), &a.Keys); err != nil {
 		return err
 	}
-
-	fmt.Println(a.Keys)
 
 	return nil
 }

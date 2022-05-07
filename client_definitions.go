@@ -8,7 +8,6 @@ import (
 
 type Client struct {
 	sync.Mutex
-	waitGroup sync.WaitGroup
 
 	client *resty.Client
 	ready  bool

@@ -30,8 +30,8 @@ func (h *Client) do(method, route, body string, nested bool) ([]byte, error) {
 		return data, nil
 	}
 
+	key := h.accounts[h.index.KeyAccountIndex].Keys.Keys[h.index.KeyIndex].Key
 	h.incIndex()
-	key := h.accounts[h.index.KeyAccountIndex].Keys.Keys[h.index.KeyIndex]
 
 	req := h.client.R().SetHeaders(map[string]string{
 		"Content-Type":  "application/json",
@@ -67,14 +67,14 @@ func (h *Client) do(method, route, body string, nested bool) ([]byte, error) {
 
 		if APIError.Reason == InvalidIP {
 			h.getIP()
-			for _, account := range h.accounts {
-				err := account.login(h.client)
+			for index := range h.accounts {
+				err := h.accounts[index].login(h.client)
 				if err != nil {
 					return nil, err
 				}
 
 				// This calls getKeys() anyways
-				err = account.updateKeys(h.ipAddress, h.client)
+				err = h.accounts[index].updateKeys(h.ipAddress, h.client)
 				if err != nil {
 					return nil, err
 				}
