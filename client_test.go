@@ -3,6 +3,7 @@ package coc
 import (
 	"log"
 	"os"
+
 	//"testing"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 )
 
 var (
-	dummyClient *HTTPSessionManager
+	dummyClient *Client
 	dummyLoaded bool
 )
 
@@ -37,7 +38,7 @@ func duration(msg string, start time.Time) {
 	log.Printf("%v: %v\n", msg, time.Since(start))
 }
 
-// func TestHTTPSessionManager_GetPlayer(t *testing.T) {
+// func TestClient_GetPlayer(t *testing.T) {
 // 	init_dummy()
 // 	type args struct {
 // 		PlayerTag string
@@ -58,14 +59,14 @@ func duration(msg string, start time.Time) {
 // 			defer duration(track("GET Player " + tt.args.PlayerTag + " Time"))
 // 			_, err := dummyClient.GetPlayer(tt.args.PlayerTag)
 // 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("HTTPSessionManager.GetPlayer() error = %v, wantErr %v", err, tt.wantErr)
+// 				t.Errorf("Client.GetPlayer() error = %v, wantErr %v", err, tt.wantErr)
 // 				return
 // 			}
 // 		})
 // 	}
 // }
 
-// func TestHTTPSessionManager_SearchClans(t *testing.T) {
+// func TestClient_SearchClans(t *testing.T) {
 // 	init_dummy()
 // 	type args struct {
 // 		options *clanSearchOptions
@@ -84,7 +85,7 @@ func duration(msg string, start time.Time) {
 // 			defer duration(track("GET Search Clans " + tt.args.options.ToQuery() + " Time"))
 // 			_, err := dummyClient.SearchClans(tt.args.options)
 // 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("HTTPSessionManager.SearchClans() error = %v, wantErr %v", err, tt.wantErr)
+// 				t.Errorf("Client.SearchClans() error = %v, wantErr %v", err, tt.wantErr)
 // 				return
 // 			}
 
@@ -92,7 +93,7 @@ func duration(msg string, start time.Time) {
 // 	}
 // }
 
-// func TestHTTPSessionManager_GetLeagues(t *testing.T) {
+// func TestClient_GetLeagues(t *testing.T) {
 // 	init_dummy()
 // 	type args struct {
 // 		options *searchOptions
@@ -109,7 +110,7 @@ func duration(msg string, start time.Time) {
 // 			defer duration(track("GET Leagues " + tt.args.options.ToQuery() + " Time"))
 // 			_, err := dummyClient.GetLeagues(tt.args.options)
 // 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("HTTPSessionManager.GetLeagues() error = %v, wantErr %v", err, tt.wantErr)
+// 				t.Errorf("Client.GetLeagues() error = %v, wantErr %v", err, tt.wantErr)
 // 				return
 // 			}
 // 		})
