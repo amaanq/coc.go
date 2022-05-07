@@ -206,7 +206,11 @@ func (c *Client) incIndex() {
 	c.Lock()
 	if c.index.KeyIndex == len(c.accounts[c.index.KeyAccountIndex].Keys.Keys)-1 {
 		c.index.KeyIndex = 0
-		c.index.KeyAccountIndex++
+		if c.index.KeyAccountIndex == len(c.accounts)-1 {
+			c.index.KeyAccountIndex = 0
+		} else {
+			c.index.KeyAccountIndex++
+		}
 	} else {
 		c.index.KeyIndex++
 	}
