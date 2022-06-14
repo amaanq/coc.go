@@ -7,10 +7,18 @@ import (
 )
 
 var (
+	useCache = true
+
 	cache     = make(map[string][]byte)
 	cacheLock sync.RWMutex
 )
 
+// Caching is enabled by default, use this to disable it
+func UseCache(b bool) {
+	useCache = b
+}
+
+// getFromCache returns the data from the cache map if it exists, otherwise nil
 func getFromCache(key string) ([]byte, error) {
 	cacheLock.RLock()
 	data, ok := cache[key]
@@ -21,6 +29,7 @@ func getFromCache(key string) ([]byte, error) {
 	return nil, errors.New("not in cache")
 }
 
+// writeToCache writes the data to the cache map
 func writeToCache(key string, data []byte, duration int) error {
 	cacheLock.Lock()
 	cache[key] = data

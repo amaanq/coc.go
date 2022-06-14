@@ -25,9 +25,13 @@ func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte
 	if !h.ready {
 		return nil, fmt.Errorf("keys are not yet ready, wait a few seconds")
 	}
+
 	url := BaseUrl + route
-	if data, err := getFromCache(url); err == nil {
-		return data, nil
+
+	if useCache {
+		if data, err := getFromCache(url); err == nil {
+			return data, nil
+		}
 	}
 
 	h.incrementIndex()
@@ -81,9 +85,8 @@ func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte
 				if err != nil {
 					return nil, err
 				}
-
-				return h.do(method, route, body, true)
 			}
+			return h.do(method, route, body, true)
 		}
 	}
 
@@ -97,10 +100,11 @@ func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte
 		return resp.Body(), nil
 	}
 
-	if err = writeToCache(url, resp.Body(), cachetime); err != nil {
-		return nil, err
+	if useCache {
+		if err = writeToCache(url, resp.Body(), cachetime); err != nil {
+			return nil, err
+		}
 	}
-
 	return resp.Body(), nil
 }
 
