@@ -13,7 +13,7 @@ type LocationData struct {
 
 type Location struct {
 	LocalizedName string `json:"localizedName,omitempty"`
-	ID            int64  `json:"id,omitempty"`
+	ID            int  `json:"id,omitempty"`
 	Name          string `json:"name,omitempty"`
 	IsCountry     bool   `json:"isCountry,omitempty"`
 	CountryCode   string `json:"countryCode,omitempty"`

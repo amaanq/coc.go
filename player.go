@@ -81,7 +81,7 @@ const (
 )
 
 type PlayerVerification struct {
-	Tag    string `json:"tag"`
+	Tag    PlayerTag `json:"tag"`
 	Token  string `json:"token"`
 	Status string `json:"status"`
 }

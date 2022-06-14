@@ -2,37 +2,39 @@ package coc
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/go-resty/resty/v2"
 )
 
-func new(credentials map[string]string) (*HTTPSessionManager, error) {
-	var creds []LoginCredential
+func newClient(credentials map[string]string) (*Client, error) {
+	var accounts []APIAccount
 	for email, password := range credentials {
-		creds = append(creds, LoginCredential{Email: email, Password: password})
+		// For each email, create a login where the actual credentials are filled out, to be fully filled in later when logging in and getting keys.
+		accounts = append(accounts, APIAccount{
+			Credential: Credential{Email: email, Password: password},
+		})
 	}
 
-	H := &HTTPSessionManager{
-		client:      resty.New(),
-		credentials: creds,
-		logins:      make([]LoginResponse, 0),
-		keyIndex:    0,
-		ready:       true,
+	H := &Client{
+		client:     resty.New(),
+		ready:      true,
+		accounts:   accounts,
+		index:      Index{KeyAccountIndex: 0, KeyIndex: 0},
+		StatusCode: 0,
+		ipAddress:  "",
 	}
+	H.getIP()
 
-	for _, credential := range H.credentials {
-		err := H.login(credential)
+	for index := range H.accounts {
+		err := H.accounts[index].login(H.client)
 		if err != nil {
 			return nil, err
 		}
 
-		err = H.getKeys()
-		if err != nil {
-			return nil, err
-		}
-
-		err = H.updateKeys()
+		// This calls getKeys() anyways
+		err = H.accounts[index].updateKeys(H.ipAddress, H.client)
 		if err != nil {
 			return nil, err
 		}
@@ -41,57 +43,51 @@ func new(credentials map[string]string) (*HTTPSessionManager, error) {
 	return H, nil
 }
 
-func (h *HTTPSessionManager) login(credential LoginCredential) error {
-	resp, err := h.client.R().
+// Log in to an account and unmarshal response into a.Response
+func (a *APIAccount) login(client *resty.Client) error {
+	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBody(fmt.Sprintf(`{"email":"%s","password":"%s"}`, credential.Email, credential.Password)).
+		SetBody(fmt.Sprintf(`{"email":"%s","password":"%s"}`, a.Credential.Email, a.Credential.Password)).
 		Post(DevBaseUrl + LoginEndpoint)
 	if err != nil {
 		return err
 	}
 
-	if h.StatusCode = resp.StatusCode(); h.StatusCode != 200 {
+	if resp.StatusCode() != 200 {
 		return fmt.Errorf(string(resp.Body()))
 	}
 
-	var loginresponse LoginResponse
-	if err = json.Unmarshal(resp.Body(), &loginresponse); err != nil {
+	if err = json.Unmarshal(resp.Body(), &a.Response); err != nil {
 		return err
 	}
-
-	h.appendLogin(loginresponse)
 
 	return nil
 }
 
-func (h *HTTPSessionManager) getKeys() error {
-	resp, err := h.client.R().
+func (a *APIAccount) getKeys(client *resty.Client) error {
+	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
 		Post(DevBaseUrl + KeyListEndpoint)
 	if err != nil {
 		return err
 	}
 
-	if h.StatusCode = resp.StatusCode(); h.StatusCode != 200 {
+	if resp.StatusCode() != 200 {
 		return fmt.Errorf(string(resp.Body()))
 	}
 
-	if err = json.Unmarshal(resp.Body(), &h.currentLoginKeys); err != nil {
+	if err = json.Unmarshal(resp.Body(), &a.Keys); err != nil {
 		return err
 	}
 
-	h.allKeys.Keys = append(h.allKeys.Keys, h.currentLoginKeys.Keys...)
 	return nil
 }
 
-func (h *HTTPSessionManager) createKey() error {
-	if h.iP == "" {
-		h.getIP()
-	}
-
+func (a *APIAccount) createKey(ip string, client *resty.Client) error {
 	description := fmt.Sprintf("Created on %s", time.Now().Format(time.RFC3339))
-	body := fmt.Sprintf(`{"name":"%s","descriPtion":"%s", "cidrRanges": ["%s"], "scopes": ["clash"]}`, "coc.go", description, h.iP)
-	resp, err := h.client.R().
+	body := fmt.Sprintf(`{"name":"%s","descriPtion":"%s", "cidrRanges": ["%s"], "scopes": ["clash"]}`, "coc.go", description, ip)
+
+	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(body).
 		Post(DevBaseUrl + KeyCreateEndpoint)
@@ -99,7 +95,7 @@ func (h *HTTPSessionManager) createKey() error {
 		return err
 	}
 
-	if h.StatusCode = resp.StatusCode(); h.StatusCode != 200 {
+	if resp.StatusCode() != 200 {
 		return fmt.Errorf(string(resp.Body()))
 	}
 
@@ -108,13 +104,15 @@ func (h *HTTPSessionManager) createKey() error {
 		return err
 	}
 
-	h.allKeys.Keys = append(h.allKeys.Keys, keycreationresponse.Key)
+	// Refresh account's keys after creation here.
+	go a.getKeys(client)
+
 	return nil
 }
 
-func (h *HTTPSessionManager) revokeKey(key Key) error {
+func (a *APIAccount) revokeKey(key Key, client *resty.Client) error {
 	jsonBody := fmt.Sprintf(`{"id": "%s"}`, key.ID)
-	resp, err := h.client.R().
+	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(jsonBody).
 		Post(DevBaseUrl + KeyRevokeEndpoint)
@@ -122,7 +120,7 @@ func (h *HTTPSessionManager) revokeKey(key Key) error {
 		return err
 	}
 
-	if h.StatusCode = resp.StatusCode(); h.StatusCode != 200 {
+	if resp.StatusCode() != 200 {
 		return fmt.Errorf(string(resp.Body()))
 	}
 
@@ -130,112 +128,93 @@ func (h *HTTPSessionManager) revokeKey(key Key) error {
 	if err = json.Unmarshal(resp.Body(), &keydeletionresponse); err != nil {
 		return err
 	}
-	removeKey(h.allKeys.Keys, key)
+
+	// Refresh account's keys after deletion here.
+	go a.getKeys(client)
 
 	return nil
 }
 
-func (h *HTTPSessionManager) updateKeys() (err error) {
-	if h.iP == "" {
-		err = h.getIP()
-		if err != nil {
-			return err
-		}
+// This will create a key if there aren't 10 keys already for this login.
+// It will also revoke and recreate keys if the IP address changes.
+func (a *APIAccount) updateKeys(ip string, client *resty.Client) error {
+	err := a.getKeys(client) // check keys first
+	if err != nil {
+		return err
 	}
 
 	errs := make(chan error, 10)
-	numKeysLeft := 10 - len(h.currentLoginKeys.Keys)
+	numKeysLeft := 10 - len(a.Keys.Keys)
+	var wg sync.WaitGroup
 
-	for i := 0; i < numKeysLeft; i++ {
-		h.waitGroup.Add(1)
-		go func() {
-			defer h.waitGroup.Done()
-			err = h.createKey()
-			errs <- err
-		}()
-	}
-
-	h.waitGroup.Wait()
-
-	for _, key := range h.currentLoginKeys.Keys {
-		h.waitGroup.Add(1)
-		go func(key Key) {
-			defer h.waitGroup.Done()
-			if !contains(key.Cidrranges, h.iP) {
-				err = h.revokeKey(key)
+	// First re-create keys if the IP address changes.
+	for _, key := range a.Keys.Keys {
+		if !contains(key.Cidrranges, ip) {
+			wg.Add(1)
+			go func(key Key) {
+				defer wg.Done()
+				err := a.revokeKey(key, client)
 				if err != nil {
 					errs <- err
 					return
 				}
-				err = h.createKey()
+				err = a.createKey(ip, client)
 				if err != nil {
 					errs <- err
 					return
 				}
-			}
-			errs <- nil
-		}(key)
-	}
-
-	h.waitGroup.Wait()
-
-	for {
-		select {
-		case e := <-errs:
-			close(errs)
-			return e
-		case <-time.After(time.Millisecond * 500):
-			close(errs)
-			return nil
+			}(key)
 		}
 	}
+	wg.Wait()
+
+	// Then create more keys if there aren't 10.
+	wg.Add(numKeysLeft)
+	for i := 0; i < numKeysLeft; i++ {
+		go func() {
+			defer wg.Done()
+			err := a.createKey(ip, client)
+			if err != nil {
+				errs <- err
+			}
+		}()
+	}
+	wg.Wait()
+
+	if len(errs) > 0 {
+		return <-errs
+	}
+	return nil
 }
 
-func (h *HTTPSessionManager) getIP() error {
-	resp, err := h.client.R().
+func (c *Client) getIP() error {
+	resp, err := c.client.R().
 		Get(IPUrl)
 	if err != nil {
 		return err
 	}
 
-	if h.StatusCode = resp.StatusCode(); h.StatusCode != 200 {
+	if resp.StatusCode() != 200 {
 		return fmt.Errorf(string(resp.Body()))
 	}
 
-	h.iP = string(resp.Body())
+	c.ipAddress = string(resp.Body())
 	return nil
 }
 
-func removeKey(keylist []Key, deleteKey Key) []Key {
-	var ret []Key
-	for _, key := range keylist {
-		if deleteKey.ID != key.ID {
-			ret = append(ret, key)
+func (c *Client) incIndex() {
+	c.Lock()
+	if c.index.KeyIndex == len(c.accounts[c.index.KeyAccountIndex].Keys.Keys)-1 {
+		c.index.KeyIndex = 0
+		if c.index.KeyAccountIndex == len(c.accounts)-1 {
+			c.index.KeyAccountIndex = 0
+		} else {
+			c.index.KeyAccountIndex++
 		}
-	}
-	return ret
-}
-
-func (h *HTTPSessionManager) appendLogin(login LoginResponse) {
-	for index, existingLogin := range h.logins {
-		if existingLogin.Auth.Uid == login.Auth.Uid { // if this login was already stored just update it, otherwise append it
-			h.mutex.Lock()
-			h.logins[index] = login
-			h.mutex.Unlock()
-			return
-		}
-	}
-	h.logins = append(h.logins, login)
-}
-
-func (h *HTTPSessionManager) incrementIndex() {
-	h.mutex.Lock()
-	if h.keyIndex == len(h.allKeys.Keys)-1 {
-		h.keyIndex = 0
 	} else {
-		h.keyIndex += 1
+		c.index.KeyIndex++
 	}
-	h.mutex.Unlock()
+	c.Unlock()
 }
 
 func contains(s []string, str string) bool {

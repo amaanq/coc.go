@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -21,7 +21,7 @@ var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
-func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte, error) {
+func (h *Client) do(method, route, body string, nested bool) ([]byte, error) {
 	if !h.ready {
 		return nil, fmt.Errorf("keys are not yet ready, wait a few seconds")
 	}
@@ -34,8 +34,8 @@ func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte
 		}
 	}
 
-	h.incrementIndex()
-	key := h.allKeys.Keys[h.keyIndex].Key
+	key := h.accounts[h.index.KeyAccountIndex].Keys.Keys[h.index.KeyIndex].Key
+	h.incIndex()
 
 	req := h.client.R().SetHeaders(map[string]string{
 		"Content-Type":  "application/json",
@@ -70,23 +70,20 @@ func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte
 		}
 
 		if APIError.Reason == InvalidIP {
-			for _, credential := range h.credentials {
-				err := h.login(credential)
+			h.getIP()
+			for index := range h.accounts {
+				err := h.accounts[index].login(h.client)
 				if err != nil {
 					return nil, err
 				}
 
-				err = h.getKeys()
-				if err != nil {
-					return nil, err
-				}
-
-				err = h.updateKeys()
+				// This calls getKeys() anyways
+				err = h.accounts[index].updateKeys(h.ipAddress, h.client)
 				if err != nil {
 					return nil, err
 				}
 			}
-			return h.do(method, route, body, true)
+			return h.do(method, route, body, true) // Nested = true so return on error no matter what here (we don't want to loop)
 		}
 	}
 
@@ -112,7 +109,7 @@ func (h *HTTPSessionManager) do(method, route, body string, nested bool) ([]byte
 // Clan Methods
 //_______________________________________________________________________
 
-func (h *HTTPSessionManager) SearchClans(options *clanSearchOptions) (*ClanList, error) {
+func (h *Client) SearchClans(options *clanSearchOptions) (*ClanList, error) {
 	var ClanList ClanList
 	var opts string
 
@@ -139,7 +136,7 @@ func (h *HTTPSessionManager) SearchClans(options *clanSearchOptions) (*ClanList,
 	return &ClanList, nil
 }
 
-func (h *HTTPSessionManager) GetClan(ClanTag string) (*Clan, error) {
+func (h *Client) GetClan(ClanTag string) (*Clan, error) {
 	var Clan Clan
 	ClanTag = string(toClanTag(ClanTag))
 
@@ -159,7 +156,7 @@ func (h *HTTPSessionManager) GetClan(ClanTag string) (*Clan, error) {
 	return &Clan, nil
 }
 
-func (h *HTTPSessionManager) GetClanMembers(ClanTag string) ([]ClanMember, error) {
+func (h *Client) GetClanMembers(ClanTag string) ([]ClanMember, error) {
 	ClanMems := make([]ClanMember, 0)
 	ClanTag = string(toClanTag(ClanTag))
 
@@ -179,7 +176,7 @@ func (h *HTTPSessionManager) GetClanMembers(ClanTag string) ([]ClanMember, error
 	return ClanMems, nil
 }
 
-func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) (*WarLog, error) {
+func (h *Client) GetClanWarLog(ClanTag string) (*WarLog, error) {
 	var ClanWarLog WarLog
 	ClanTag = string(toClanTag(ClanTag))
 
@@ -199,7 +196,7 @@ func (h *HTTPSessionManager) GetClanWarLog(ClanTag string) (*WarLog, error) {
 	return &ClanWarLog, nil
 }
 
-func (h *HTTPSessionManager) GetClanCurrentWar(ClanTag string) (*CurrentWar, error) {
+func (h *Client) GetClanCurrentWar(ClanTag string) (*CurrentWar, error) {
 	var ClanWar CurrentWar
 	ClanTag = string(toClanTag(ClanTag))
 
@@ -219,11 +216,11 @@ func (h *HTTPSessionManager) GetClanCurrentWar(ClanTag string) (*CurrentWar, err
 	return &ClanWar, nil
 }
 
-func (h *HTTPSessionManager) GetClanWarLeagueGroup(ClanTag string) { //waiting for next cwl
+func (h *Client) GetClanWarLeagueGroup(ClanTag string) { //waiting for next cwl
 
 }
 
-func (h *HTTPSessionManager) GetCWLWars(WarTag string) { //above
+func (h *Client) GetCWLWars(WarTag string) { //above
 
 }
 
@@ -231,7 +228,7 @@ func (h *HTTPSessionManager) GetCWLWars(WarTag string) { //above
 // Player Methods
 //_______________________________________________________________________
 
-func (h *HTTPSessionManager) GetPlayer(PlayerTag string) (*Player, error) {
+func (h *Client) GetPlayer(PlayerTag string) (*Player, error) {
 	var Player Player
 	PlayerTag = string(toPlayerTag(PlayerTag))
 
@@ -254,7 +251,7 @@ func (h *HTTPSessionManager) GetPlayer(PlayerTag string) (*Player, error) {
 // Note: This is a custom method I made to make use of concurrency.
 // A slice of players will be returned with no error, however players that had an error (i.e are banned or the tag never existed)
 // will be nil inside the slice. The order of the player tags is kept intact.
-func (h *HTTPSessionManager) GetPlayers(PlayerTags []string) []*Player {
+func (h *Client) GetPlayers(PlayerTags []string) []*Player {
 	Players := make([]*Player, len(PlayerTags))
 	PlayerMap := make(map[string]*Player)
 
@@ -290,7 +287,7 @@ func (h *HTTPSessionManager) GetPlayers(PlayerTags []string) []*Player {
 }
 
 // Side note: This is the only POST method for the API so far
-func (h *HTTPSessionManager) VerifyPlayerToken(PlayerTag string, Token string) (*PlayerVerification, error) {
+func (h *Client) VerifyPlayerToken(PlayerTag string, Token string) (*PlayerVerification, error) {
 	var Verification PlayerVerification
 	PlayerTag = string(toPlayerTag(PlayerTag))
 
@@ -314,7 +311,7 @@ func (h *HTTPSessionManager) VerifyPlayerToken(PlayerTag string, Token string) (
 // League Methods
 //_______________________________________________________________________
 
-func (h *HTTPSessionManager) GetLeagues(options *searchOptions) (*LeagueData, error) {
+func (h *Client) GetLeagues(options *searchOptions) (*LeagueData, error) {
 	var LeagueData LeagueData
 	var opts string
 
@@ -337,7 +334,7 @@ func (h *HTTPSessionManager) GetLeagues(options *searchOptions) (*LeagueData, er
 	return &LeagueData, nil
 }
 
-func (h *HTTPSessionManager) GetLeague(LeagueID LeagueID) (*League, error) {
+func (h *Client) GetLeague(LeagueID LeagueID) (*League, error) {
 	var League League
 	data, reqErr := h.do(GET, LeagueEndpoint+"/"+fmt.Sprint(LeagueID), "", false)
 	if reqErr != nil {
@@ -356,7 +353,7 @@ func (h *HTTPSessionManager) GetLeague(LeagueID LeagueID) (*League, error) {
 }
 
 // Ensure you pass in 29000022 for LeagueID
-func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID LeagueID, options *searchOptions) (*SeasonData, error) {
+func (h *Client) GetLeagueSeasons(LeagueID LeagueID, options *searchOptions) (*SeasonData, error) {
 	var SeasonData SeasonData
 	var opts string
 	if LeagueID != LegendLeague {
@@ -384,7 +381,7 @@ func (h *HTTPSessionManager) GetLeagueSeasons(LeagueID LeagueID, options *search
 }
 
 // Be cautious when using this. the data returned is massive. recommended to add args of {"limit": limit} and use the cursors for more data
-func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID LeagueID, SeasonID string, options *searchOptions) (*SeasonInfo, error) {
+func (h *Client) GetLeagueSeasonInfo(LeagueID LeagueID, SeasonID string, options *searchOptions) (*SeasonInfo, error) {
 	var SeasonInfo SeasonInfo
 	var opts string
 	if LeagueID != LegendLeague {
@@ -421,7 +418,7 @@ func (h *HTTPSessionManager) GetLeagueSeasonInfo(LeagueID LeagueID, SeasonID str
 	return &SeasonInfo, nil
 }
 
-func (h *HTTPSessionManager) GetWarLeagues(options *searchOptions) (*LeagueData, error) {
+func (h *Client) GetWarLeagues(options *searchOptions) (*LeagueData, error) {
 	var WarLeagueData LeagueData
 	var opts string
 
@@ -444,7 +441,7 @@ func (h *HTTPSessionManager) GetWarLeagues(options *searchOptions) (*LeagueData,
 	return &WarLeagueData, nil
 }
 
-func (h *HTTPSessionManager) GetWarLeague(WarLeagueID WarLeagueID) (*League, error) {
+func (h *Client) GetWarLeague(WarLeagueID WarLeagueID) (*League, error) {
 	var WarLeague League
 	data, reqErr := h.do(GET, WarLeagueEndpoint+"/"+fmt.Sprint(WarLeagueID), "", false)
 	if reqErr != nil {
@@ -467,7 +464,7 @@ func (h *HTTPSessionManager) GetWarLeague(WarLeagueID WarLeagueID) (*League, err
 //_______________________________________________________________________
 
 //This should be passed ideally with nothing, kwargs aren't necessary here but only for the sake of completeness.
-func (h *HTTPSessionManager) GetLocations(options *searchOptions) (*LocationData, error) {
+func (h *Client) GetLocations(options *searchOptions) (*LocationData, error) {
 	var LocationData LocationData
 	var opts string
 	if options != nil {
@@ -489,7 +486,7 @@ func (h *HTTPSessionManager) GetLocations(options *searchOptions) (*LocationData
 	return &LocationData, nil
 }
 
-func (h *HTTPSessionManager) GetLocation(LocationID LocationID) (*Location, error) {
+func (h *Client) GetLocation(LocationID LocationID) (*Location, error) {
 	var Location Location
 	data, reqErr := h.do(GET, LocationEndpoint+"/"+fmt.Sprint(LocationID), "", false)
 	if reqErr != nil {
@@ -508,7 +505,7 @@ func (h *HTTPSessionManager) GetLocation(LocationID LocationID) (*Location, erro
 }
 
 // Main Village Clan Rankings
-func (h *HTTPSessionManager) GetLocationClans(LocationID LocationID, options *searchOptions) (*ClanRankingList, error) {
+func (h *Client) GetLocationClans(LocationID LocationID, options *searchOptions) (*ClanRankingList, error) {
 	var ClanData ClanRankingList
 	var opts string
 	if options != nil {
@@ -531,7 +528,7 @@ func (h *HTTPSessionManager) GetLocationClans(LocationID LocationID, options *se
 }
 
 // Builder Hall Clan Rankings
-func (h *HTTPSessionManager) GetLocationClansVersus(LocationID LocationID, options *searchOptions) (*ClanVersusRankingList, error) {
+func (h *Client) GetLocationClansVersus(LocationID LocationID, options *searchOptions) (*ClanVersusRankingList, error) {
 	var ClanVersusData ClanVersusRankingList
 	var opts string
 	if options != nil {
@@ -554,7 +551,7 @@ func (h *HTTPSessionManager) GetLocationClansVersus(LocationID LocationID, optio
 }
 
 // Main Village Player Rankings
-func (h *HTTPSessionManager) GetLocationPlayers(LocationID LocationID, options *searchOptions) (*PlayerRankingList, error) {
+func (h *Client) GetLocationPlayers(LocationID LocationID, options *searchOptions) (*PlayerRankingList, error) {
 	var PlayerData PlayerRankingList
 	var opts string
 	if options != nil {
@@ -577,7 +574,7 @@ func (h *HTTPSessionManager) GetLocationPlayers(LocationID LocationID, options *
 }
 
 // Builder Hall Player Rankings
-func (h *HTTPSessionManager) GetLocationPlayersVersus(LocationID LocationID, options *searchOptions) (*PlayerVersusRankingList, error) {
+func (h *Client) GetLocationPlayersVersus(LocationID LocationID, options *searchOptions) (*PlayerVersusRankingList, error) {
 	var PlayerVersusData PlayerVersusRankingList
 	var opts string
 	if options != nil {
@@ -603,7 +600,7 @@ func (h *HTTPSessionManager) GetLocationPlayersVersus(LocationID LocationID, opt
 // Gold Pass Method
 //_______________________________________________________________________
 
-func (h *HTTPSessionManager) GetGoldPass() (*GoldPassSeason, error) {
+func (h *Client) GetGoldPass() (*GoldPassSeason, error) {
 	var GoldPass GoldPassSeason
 	data, reqErr := h.do(GET, GoldpassEndpoint, "", false)
 	if reqErr != nil {
@@ -625,7 +622,7 @@ func (h *HTTPSessionManager) GetGoldPass() (*GoldPassSeason, error) {
 // Label Methods
 //_______________________________________________________________________
 
-func (h *HTTPSessionManager) GetClanLabels(options *searchOptions) (*LabelsData, error) {
+func (h *Client) GetClanLabels(options *searchOptions) (*LabelsData, error) {
 	var LabelsData LabelsData
 	var opts string
 	if options != nil {
@@ -647,7 +644,7 @@ func (h *HTTPSessionManager) GetClanLabels(options *searchOptions) (*LabelsData,
 	return &LabelsData, nil
 }
 
-func (h *HTTPSessionManager) GetPlayerLabels(options *searchOptions) (*LabelsData, error) {
+func (h *Client) GetPlayerLabels(options *searchOptions) (*LabelsData, error) {
 	var LabelsData LabelsData
 	var opts string
 	if options != nil {
