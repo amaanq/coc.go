@@ -3,10 +3,10 @@ package coc
 import "fmt"
 
 type APIError struct {
-	StatusCode int
+	Err        error
 	Reason     string `json:"reason,omitempty"`
 	Message    string `json:"message,omitempty"`
-	Err        error
+	StatusCode int
 }
 
 func (a *APIError) Error() string {

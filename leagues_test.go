@@ -11,6 +11,7 @@ func Test_GetLeagues(t *testing.T) {
 	}
 	t.Log("leagues", leagues)
 }
+
 func Test_GetLeagueID(t *testing.T) {
 	init_dummy()
 

@@ -6,12 +6,12 @@ type AchievementID string
 
 type Achievement struct {
 	Name           string
-	Stars          int
-	Value          int
-	Target         int
 	Info           string
 	CompletionInfo string
 	Village        string
+	Stars          int
+	Value          int
+	Target         int
 }
 
 // If you're peering into this and I've typo'd an achievement name causing an error when fetching it, please let me know.

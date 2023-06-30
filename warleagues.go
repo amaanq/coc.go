@@ -29,12 +29,12 @@ const (
 )
 
 type LeagueData struct {
-	Leagues []League `json:"items,omitempty"`
 	Paging  Paging   `json:"paging,omitempty"`
+	Leagues []League `json:"items,omitempty"`
 }
 
 type League struct {
+	IconUrls IconURLs `json:"iconUrls,omitempty"`
 	Name     string   `json:"name,omitempty"`
 	ID       int      `json:"id,omitempty"`
-	IconUrls IconURLs `json:"iconUrls,omitempty"`
 }

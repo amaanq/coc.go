@@ -7,16 +7,13 @@ import (
 )
 
 type Client struct {
-	sync.Mutex
-
-	client *resty.Client
-	ready  bool
-
-	accounts []APIAccount
-
+	client     *resty.Client
+	ipAddress  string
+	accounts   []APIAccount
 	index      Index
 	StatusCode int
-	ipAddress  string
+	sync.Mutex
+	ready bool
 }
 
 // Keep track of what key we're at and what credential we're at.
@@ -38,19 +35,19 @@ type Credential struct {
 }
 
 type LoginResponse struct {
-	Status                  Status    `json:"status"`
-	SessionExpiresInSeconds int       `json:"sessionExpiresInSeconds"`
 	Auth                    Auth      `json:"auth"`
 	Developer               Developer `json:"developer"`
 	TemporaryAPIToken       string    `json:"temporaryAPIToken"`
 	SwaggerURL              string    `json:"swaggerUrl"`
+	Status                  Status    `json:"status"`
+	SessionExpiresInSeconds int       `json:"sessionExpiresInSeconds"`
 }
 
 type Auth struct {
-	Uid   string `json:"uid"`
-	Token string `json:"token"`
 	Ua    any    `json:"ua"`
 	IP    any    `json:"ip"`
+	Uid   string `json:"uid"`
+	Token string `json:"token"`
 }
 
 type Developer struct {
@@ -67,32 +64,32 @@ type Developer struct {
 }
 
 type KeyResponse struct {
+	Key                     Key    `json:"key,omitempty"`
 	Status                  Status `json:"status"`
 	SessionExpiresInSeconds int    `json:"sessionExpiresInSeconds"`
-	Key                     Key    `json:"key,omitempty"`
 }
 
 type Key struct {
+	Origins     any      `json:"origins"`
+	ValidUntil  any      `json:"validUntil"`
 	ID          string   `json:"id"`
 	Developerid string   `json:"developerId"`
 	Tier        string   `json:"tier"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
-	Origins     any      `json:"origins"`
+	Key         string   `json:"key"`
 	Scopes      []string `json:"scopes"`
 	Cidrranges  []string `json:"cidrRanges"`
-	ValidUntil  any      `json:"validUntil"`
-	Key         string   `json:"key"`
 }
 
 type Keys struct {
-	Keys          []Key  `json:"keys"`
 	Status        Status `json:"status"`
+	Keys          []Key  `json:"keys"`
 	SessionExpire int    `json:"sessionExpiresInSeconds"`
 }
 
 type Status struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
 	Detail  any    `json:"detail"`
+	Message string `json:"message,omitempty"`
+	Code    int    `json:"code,omitempty"`
 }

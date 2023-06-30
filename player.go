@@ -5,33 +5,33 @@ package coc
 //_______________________________________________________________________
 
 type Player struct {
-	Tag                  PlayerTag        `json:"tag"`
-	Name                 string           `json:"name"`
-	TownHallLevel        int              `json:"townHallLevel"`
-	TownHallWeaponLevel  int              `json:"townHallWeaponLevel"`
-	ExpLevel             int              `json:"expLevel"`
-	Trophies             int              `json:"trophies"`
-	BestTrophies         int              `json:"bestTrophies"`
-	WarStars             int              `json:"warStars"`
-	AttackWins           int              `json:"attackWins"`
-	DefenseWins          int              `json:"defenseWins"`
-	BuilderHallLevel     int              `json:"builderHallLevel"`
-	VersusTrophies       int              `json:"versusTrophies"`
-	BestVersusTrophies   int              `json:"bestVersusTrophies"`
-	VersusBattleWINS     int              `json:"versusBattleWins"`
+	League               League           `json:"league"`
 	Role                 string           `json:"role"`
+	Name                 string           `json:"name"`
+	Tag                  string           `json:"tag"`
 	WarPreference        string           `json:"warPreference"`
+	Spells               []Hero           `json:"spells"`
+	Heroes               []Hero           `json:"heroes"`
+	Troops               []Hero           `json:"troops"`
+	Labels               []Label          `json:"labels"`
+	Achievements         []Achievement    `json:"achievements"`
+	LegendStatistics     LegendStatistics `json:"legendStatistics"`
+	Clan                 Clan             `json:"clan"`
+	BestTrophies         int              `json:"bestTrophies"`
+	DefenseWins          int              `json:"defenseWins"`
+	BestVersusTrophies   int              `json:"bestVersusTrophies"`
+	VersusTrophies       int              `json:"versusTrophies"`
 	Donations            int              `json:"donations"`
 	DonationsReceived    int              `json:"donationsReceived"`
-	Clan                 Clan             `json:"clan"`
-	League               League           `json:"league"`
-	LegendStatistics     LegendStatistics `json:"legendStatistics"`
-	Achievements         []Achievement    `json:"achievements"`
+	BuilderHallLevel     int              `json:"builderHallLevel"`
+	VersusBattleWINS     int              `json:"versusBattleWins"`
+	AttackWins           int              `json:"attackWins"`
+	WarStars             int              `json:"warStars"`
 	VersusBattleWinCount int              `json:"versusBattleWinCount"`
-	Labels               []Label          `json:"labels"`
-	Troops               []Hero           `json:"troops"`
-	Heroes               []Hero           `json:"heroes"`
-	Spells               []Hero           `json:"spells"`
+	Trophies             int              `json:"trophies"`
+	ExpLevel             int              `json:"expLevel"`
+	TownHallWeaponLevel  int              `json:"townHallWeaponLevel"`
+	TownHallLevel        int              `json:"townHallLevel"`
 }
 
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -40,9 +40,9 @@ type Player struct {
 
 type Hero struct {
 	Name               string  `json:"name"`
+	Village            Village `json:"village"`
 	Level              int     `json:"level"`
 	MaxLevel           int     `json:"maxLevel"`
-	Village            Village `json:"village"`
 	SuperTroopIsActive bool    `json:"superTroopIsActive,omitempty"`
 }
 
@@ -51,11 +51,11 @@ type Hero struct {
 //_______________________________________________________________________
 
 type LegendStatistics struct {
-	LegendTrophies   int           `json:"legendTrophies"`
 	PreviousSeason   Season        `json:"previousSeason"`
 	BestSeason       Season        `json:"bestSeason"`
 	BestVersusSeason Season        `json:"bestVersusSeason"`
 	CurrentSeason    CurrentSeason `json:"currentSeason"`
+	LegendTrophies   int           `json:"legendTrophies"`
 }
 
 type Season struct {
@@ -81,7 +81,7 @@ const (
 )
 
 type PlayerVerification struct {
-	Tag    PlayerTag `json:"tag"`
+	Tag    string `json:"tag"`
 	Token  string `json:"token"`
 	Status string `json:"status"`
 }

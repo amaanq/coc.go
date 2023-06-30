@@ -14,22 +14,22 @@ type War struct {
 	Result           Result  `json:"result"`
 	Start            string  `json:"startTime"`
 	End              string  `json:"endTime"`
-	TeamSize         int     `json:"teamSize"`
-	AttacksPerMember int     `json:"attacksPerMember"`
 	Clan             WarClan `json:"clan"`
 	Opponent         WarClan `json:"opponent"`
+	TeamSize         int     `json:"teamSize"`
+	AttacksPerMember int     `json:"attacksPerMember"`
 }
 
 type WarClan struct {
-	Tag                   ClanTag     `json:"tag"`
-	Name                  string      `json:"name"`
 	BadgeURLs             IconURLs    `json:"badgeUrls"`
+	Tag                   string      `json:"tag"`
+	Name                  string      `json:"name"`
+	Members               []WarMember `json:"members"`
 	ClanLevel             int         `json:"clanLevel"`
 	Attacks               int         `json:"attacks"`
 	Stars                 int         `json:"stars"`
 	DestructionPercentage float64     `json:"destructionPercentage"`
 	ExpEarned             int         `json:"expEarned"`
-	Members               []WarMember `json:"members"`
 }
 
 type CurrentWar struct {
@@ -37,29 +37,29 @@ type CurrentWar struct {
 	PreparationStart string  `json:"preparationStartTime"`
 	Start            string  `json:"startTime"`
 	End              string  `json:"endTime"`
-	TeamSize         int     `json:"teamSize"`
-	AttacksPerMember int     `json:"attacksPerMember"`
 	Clan             WarClan `json:"clan"`
 	Opponent         WarClan `json:"opponent"`
+	TeamSize         int     `json:"teamSize"`
+	AttacksPerMember int     `json:"attacksPerMember"`
 }
 
 type WarMember struct {
-	Tag                PlayerTag   `json:"tag"`
+	Tag                string      `json:"tag"`
 	Name               string      `json:"name"`
+	Attacks            []WarAttack `json:"attacks"`
+	BestOpponentAttack WarAttack   `json:"bestOpponentAttack"`
 	TownhallLevel      int         `json:"townhallLevel"`
 	MapPosition        int         `json:"mapPosition"`
-	Attacks            []WarAttack `json:"attacks"`
 	OpponentAttacks    int         `json:"opponentAttacks"`
-	BestOpponentAttack WarAttack   `json:"bestOpponentAttack"`
 }
 
 type WarAttack struct {
-	AttackerTag           PlayerTag `json:"attackerTag"`
-	DefenderTag           PlayerTag `json:"defenderTag"`
-	Stars                 int       `json:"stars"`
-	DestructionPercentage int       `json:"destructionPercentage"`
-	Order                 int       `json:"order"`
-	Duration              int       `json:"duration"`
+	AttackerTag           string `json:"attackerTag"`
+	DefenderTag           string `json:"defenderTag"`
+	Stars                 int    `json:"stars"`
+	DestructionPercentage int    `json:"destructionPercentage"`
+	Order                 int    `json:"order"`
+	Duration              int    `json:"duration"`
 }
 
 type Result string

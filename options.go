@@ -13,9 +13,9 @@ type Base64String string
 //_______________________________________________________________________
 
 type searchOptions struct {
-	limit  int
 	before Base64String
 	after  Base64String
+	limit  int
 }
 
 func SearchOptions() *searchOptions {
@@ -77,15 +77,15 @@ func (s *searchOptions) hasNoOptions() bool {
 type clanSearchOptions struct {
 	name          string
 	warFrequency  WarFrequency
+	before        Base64String
+	after         Base64String
+	labelIds      string
 	locationID    LocationID
 	minMembers    int
 	maxMembers    int
 	minClanPoints int
 	minClanLevel  int
 	limit         int
-	before        Base64String
-	after         Base64String
-	labelIds      string
 }
 
 func ClanSearchOptions() *clanSearchOptions {

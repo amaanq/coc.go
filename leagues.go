@@ -9,14 +9,14 @@ func (l LeagueID) Valid() bool {
 }
 
 type WarLeagueData struct {
-	Leagues []League `json:"items,omitempty"`
 	Paging  Paging   `json:"paging,omitempty"`
+	Leagues []League `json:"items,omitempty"`
 }
 
 type WarLeague struct {
-	ID       int      `json:"id,omitempty"`
-	Name     string   `json:"name,omitempty"`
 	IconUrls IconURLs `json:"iconUrls,omitempty"`
+	Name     string   `json:"name,omitempty"`
+	ID       int      `json:"id,omitempty"`
 }
 
 const (
@@ -45,6 +45,4 @@ const (
 	LegendLeague
 )
 
-var (
-	ErrInvalidLeague = fmt.Errorf("only Legends League is supported, to avoid this error pass in 29000022 (or LegendLeague) for the LeagueID argument")
-)
+var ErrInvalidLeague = fmt.Errorf("only Legends League is supported, to avoid this error pass in 29000022 (or LegendLeague) for the LeagueID argument")
