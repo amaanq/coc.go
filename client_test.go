@@ -3,7 +3,6 @@ package coc
 import (
 	"log"
 	"os"
-
 	"testing"
 	"time"
 
@@ -23,7 +22,9 @@ func init_dummy() {
 	dummyLoaded = true
 
 	var err error
-	godotenv.Load()
+	if err = godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
 	dummyClient, err = New(map[string]string{os.Getenv("email"): os.Getenv("password")})
 	if err != nil {
 		log.Fatal(err)
@@ -72,8 +73,8 @@ func TestClient_SearchClans(t *testing.T) {
 		options *clanSearchOptions
 	}
 	tests := []struct {
-		name    string
 		args    args
+		name    string
 		wantErr bool
 	}{
 		{name: "Test", args: args{options: ClanSearchOptions().SetName("test").SetLimit(10).SetMaxMembers(40)}, wantErr: false},
@@ -88,7 +89,6 @@ func TestClient_SearchClans(t *testing.T) {
 				t.Errorf("Client.SearchClans() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 		})
 	}
 }
@@ -99,8 +99,8 @@ func TestClient_GetLeagues(t *testing.T) {
 		options *searchOptions
 	}
 	tests := []struct {
-		name    string
 		args    args
+		name    string
 		wantErr bool
 	}{
 		{name: "Test", args: args{options: SearchOptions().SetLimit(10).SetAfter(2)}, wantErr: false},

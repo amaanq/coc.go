@@ -25,7 +25,9 @@ func newClient(credentials map[string]string) (*Client, error) {
 		StatusCode: 0,
 		ipAddress:  "",
 	}
-	H.getIP()
+	if err := H.getIP(); err != nil {
+		return nil, err
+	}
 
 	for index := range H.accounts {
 		err := H.accounts[index].login(H.client)
@@ -105,7 +107,12 @@ func (a *APIAccount) createKey(ip string, client *resty.Client) error {
 	}
 
 	// Refresh account's keys after creation here.
-	go a.getKeys(client)
+	go func() {
+		if err := a.getKeys(client); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}()
 
 	return nil
 }
@@ -130,7 +137,12 @@ func (a *APIAccount) revokeKey(key Key, client *resty.Client) error {
 	}
 
 	// Refresh account's keys after deletion here.
-	go a.getKeys(client)
+	go func() {
+		if err := a.getKeys(client); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}()
 
 	return nil
 }

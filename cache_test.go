@@ -21,9 +21,15 @@ func Test_getFromCache(t *testing.T) {
 	}
 
 	// add 3 things first to cache
-	writeToCache("hello", []byte("world"), 0)
-	writeToCache("#2PP", []byte("#2PP"), 0)
-	writeToCache("goodbye", []byte("night night"), 0)
+	if err := writeToCache("hello", []byte("world"), 0); err != nil {
+		t.Errorf("writeToCache() error = %v", err)
+	}
+	if err := writeToCache("#2PP", []byte("#2PP"), 0); err != nil {
+		t.Errorf("writeToCache() error = %v", err)
+	}
+	if err := writeToCache("goodbye", []byte("night night"), 0); err != nil {
+		t.Errorf("writeToCache() error = %v", err)
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := getFromCache(tt.args.key)

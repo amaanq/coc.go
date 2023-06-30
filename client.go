@@ -17,9 +17,7 @@ const (
 	POST = "POST"
 )
 
-var (
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
-)
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func (h *Client) do(method, route, body string, nested bool) ([]byte, error) {
 	if !h.ready {
@@ -51,6 +49,8 @@ func (h *Client) do(method, route, body string, nested bool) ([]byte, error) {
 	case "POST":
 		req.SetBody(body)
 		resp, err = req.Post(url)
+	default:
+		return nil, fmt.Errorf(fmt.Sprintf("invalid method: %s", method))
 	}
 
 	if err != nil {
@@ -66,11 +66,13 @@ func (h *Client) do(method, route, body string, nested bool) ([]byte, error) {
 
 	if resp.StatusCode() == 403 {
 		if nested {
-			return nil, &APIError //fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
+			return nil, &APIError // fmt.Errorf(fmt.Sprintf("[%d]: %s", resp.StatusCode(), string(resp.Body())))
 		}
 
 		if APIError.Reason == InvalidIP {
-			h.getIP()
+			if err := h.getIP(); err != nil {
+				return nil, err
+			}
 			for index := range h.accounts {
 				err := h.accounts[index].login(h.client)
 				if err != nil {
@@ -216,12 +218,10 @@ func (h *Client) GetClanCurrentWar(ClanTag string) (*CurrentWar, error) {
 	return &ClanWar, nil
 }
 
-func (h *Client) GetClanWarLeagueGroup(ClanTag string) { //waiting for next cwl
-
+func (h *Client) GetClanWarLeagueGroup(ClanTag string) { // waiting for next cwl
 }
 
-func (h *Client) GetCWLWars(WarTag string) { //above
-
+func (h *Client) GetCWLWars(WarTag string) { // above
 }
 
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -255,8 +255,8 @@ func (h *Client) GetPlayers(PlayerTags []string) []*Player {
 	Players := make([]*Player, len(PlayerTags))
 	PlayerMap := make(map[string]*Player)
 
-	for idx, _tag := range PlayerTags { // correct all tags to check with the map later
-		PlayerTags[idx] = string(toPlayerTag(_tag))
+	for idx, tag := range PlayerTags { // correct all tags to check with the map later
+		PlayerTags[idx] = string(toPlayerTag(tag))
 	}
 
 	var playerWg sync.WaitGroup
@@ -357,7 +357,6 @@ func (h *Client) GetLeagueSeasons(LeagueID LeagueID, options *searchOptions) (*S
 	var SeasonData SeasonData
 	var opts string
 	if LeagueID != LegendLeague {
-		fmt.Println(ErrInvalidLeague.Error())
 		return nil, ErrInvalidLeague
 	}
 	if options != nil {
@@ -385,7 +384,6 @@ func (h *Client) GetLeagueSeasonInfo(LeagueID LeagueID, SeasonID string, options
 	var SeasonInfo SeasonInfo
 	var opts string
 	if LeagueID != LegendLeague {
-		fmt.Println(ErrInvalidLeague)
 		LeagueID = LegendLeague
 	}
 
@@ -463,7 +461,7 @@ func (h *Client) GetWarLeague(WarLeagueID WarLeagueID) (*League, error) {
 // Location Methods
 //_______________________________________________________________________
 
-//This should be passed ideally with nothing, kwargs aren't necessary here but only for the sake of completeness.
+// This should be passed ideally with nothing, kwargs aren't necessary here but only for the sake of completeness.
 func (h *Client) GetLocations(options *searchOptions) (*LocationData, error) {
 	var LocationData LocationData
 	var opts string

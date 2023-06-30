@@ -61,7 +61,7 @@ func Test_GetLeagueSeasons(t *testing.T) {
 func Test_GetLeagueSeasonID(t *testing.T) {
 	init_dummy()
 
-	season, err := dummyClient.GetLeagueSeasonInfo(LegendLeague, "2020-12", nil)
+	season, err := dummyClient.GetLeagueSeasonInfo(LegendLeague, "2015-12", nil)
 	if err != nil {
 		t.Errorf("GetLeagueSeasonInfo() error = %v", err)
 	}
