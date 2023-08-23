@@ -5,8 +5,6 @@
 [![GoDoc](https://img.shields.io/badge/pkg.go.dev-doc-blue)](http://pkg.go.dev/github.com/amaanq/coc.go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/amaanq/coc.go)](https://goreportcard.com/report/github.com/amaanq/coc.go)
 
-### NOTICE: if you came from the CoC API Junkies Server, I request that you bear in mind the server is full of buffoons whose egos surpass their passion (and/or skills) for programming. I will not bear any ill will, but I only ask that you do not forget
-
 ## Getting Started
 
 ### Installing
