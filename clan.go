@@ -3,30 +3,30 @@ package coc
 import "fmt"
 
 type Clan struct {
-	MemberList             []ClanMember `json:"memberList"`
-	WarTies                int          `json:"warTies"`
-	Description            string       `json:"description"`
-	Location               Location     `json:"location"`
-	WarLosses              int          `json:"warLosses"`
-	ChatLanguage           ChatLanguage `json:"chatLanguage"`
-	ClanCapital            ClanCapital  `json:"clanCapital"`
-	WarLeague              WarLeague    `json:"warLeague"`
-	BadgeURLs              IconURLs     `json:"badgeUrls"`
-	Tag                    string       `json:"tag"`
-	WarFrequency           WarFrequency `json:"warFrequency"`
-	Privacy                Privacy      `json:"type"`
-	Name                   string       `json:"name"`
-	Labels                 []Label      `json:"labels"`
-	ClanLevel              int          `json:"clanLevel"`
-	WarWins                int          `json:"warWins"`
-	Members                int          `json:"members"`
-	WarWinStreak           int          `json:"warWinStreak"`
-	RequiredTrophies       int          `json:"requiredTrophies"`
-	RequiredVersusTrophies int          `json:"requiredVersusTrophies"`
-	RequiredTownhallLevel  int          `json:"requiredTownhallLevel"`
-	ClanVersusPoints       int          `json:"clanVersusPoints"`
-	ClanPoints             int          `json:"clanPoints"`
-	IsWarLogPublic         bool         `json:"isWarLogPublic"`
+	MemberList             *[]ClanMember `json:"memberList"`
+	WarTies                *int          `json:"warTies"`
+	Description            *string       `json:"description"`
+	Location               *Location     `json:"location"`
+	WarLosses              *int          `json:"warLosses"`
+	ChatLanguage           *ChatLanguage `json:"chatLanguage"`
+	ClanCapital            *ClanCapital  `json:"clanCapital"`
+	WarLeague              WarLeague     `json:"warLeague"`
+	BadgeURLs              IconURLs      `json:"badgeUrls"`
+	Tag                    string        `json:"tag"`
+	WarFrequency           WarFrequency  `json:"warFrequency"`
+	Privacy                Privacy       `json:"type"`
+	Name                   string        `json:"name"`
+	Labels                 []Label       `json:"labels"`
+	ClanLevel              int           `json:"clanLevel"`
+	WarWins                int           `json:"warWins"`
+	Members                int           `json:"members"`
+	WarWinStreak           int           `json:"warWinStreak"`
+	RequiredTrophies       int           `json:"requiredTrophies"`
+	RequiredVersusTrophies int           `json:"requiredVersusTrophies"`
+	RequiredTownhallLevel  int           `json:"requiredTownhallLevel"`
+	ClanVersusPoints       int           `json:"clanVersusPoints"`
+	ClanPoints             int           `json:"clanPoints"`
+	IsWarLogPublic         bool          `json:"isWarLogPublic"`
 }
 
 func (c *Clan) GameLink() string {
