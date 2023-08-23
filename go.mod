@@ -1,4 +1,4 @@
-module https://github.com/antonschnitzer/coc.go
+module github.com/antonschnitzer/coc.go
 
 go 1.21
 
