@@ -1,9 +1,6 @@
 package coc
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
 type Clan struct {
 	MemberList             *[]ClanMember `json:"memberList"`
@@ -33,15 +30,15 @@ type Clan struct {
 }
 
 func (c *Clan) GameLink() string {
-	return fmt.Sprintf("https://link.clashofclans.com/en?action=OpenClanProfile&tag=%s", strings.ReplaceAll(c.Tag, "#", ""))
+	return fmt.Sprintf("https://link.clashofclans.com/en?action=OpenClanProfile&tag=%s", c.Tag[1:])
 }
 
 func (c *Clan) ClashOfStatsLink() string {
-	return fmt.Sprintf("https://www.clashofstats.com/clans/%s/summary", strings.ReplaceAll(c.Tag, "#", ""))
+	return fmt.Sprintf("https://www.clashofstats.com/clans/%s/summary", c.Tag[1:])
 }
 
 func (c *Clan) ChocolateClashLink() string {
-	return fmt.Sprintf("https://cc.chocolateclash.com/cc_n/clan.php?tag=%s", strings.ReplaceAll(c.Tag, "#", ""))
+	return fmt.Sprintf("https://cc.chocolateclash.com/cc_n/clan.php?tag=%s", c.Tag[1:])
 }
 
 type Privacy string

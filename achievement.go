@@ -5,13 +5,13 @@ import "errors"
 type AchievementID string
 
 type Achievement struct {
-	Name           string
-	Info           string
-	CompletionInfo string
-	Village        string
-	Stars          int
-	Value          int
-	Target         int
+	Name           string `json:"name"`
+	Info           string `json:"info"`
+	CompletionInfo string `json:"completionInfo"`
+	Village        string `json:"village"`
+	Stars          int    `json:"stars"`
+	Value          int    `json:"value"`
+	Target         int    `json:"target"`
 }
 
 // If you're peering into this and I've typo'd an achievement name causing an error when fetching it, please let me know.
@@ -58,6 +58,13 @@ var (
 	BustThis                Achievement = Achievement{Name: "Bust This"}
 	SuperbWork              Achievement = Achievement{Name: "Superb Work"}
 	SiegeSharer             Achievement = Achievement{Name: "Siege Sharer"}
+	Counterspell            Achievement = Achievement{Name: "Counterspell"}
+	MonolithMasher          Achievement = Achievement{Name: "Monolith Masher"}
+	GetThoseOtherGoblins    Achievement = Achievement{Name: "Get those other Goblins!"}
+	GetEvenMoreGoblins      Achievement = Achievement{Name: "Get even more Goblins!"}
+	UngratefulChild         Achievement = Achievement{Name: "Ungrateful Child"}
+	AggressiveCapitalism    Achievement = Achievement{Name: "Aggressive Capitalism"}
+	MostValuableClanmate    Achievement = Achievement{Name: "Most Valuable Clanmate"}
 )
 
 func GetAchievement(givenAchievements []Achievement, wantedAchievement Achievement) (Achievement, error) {
