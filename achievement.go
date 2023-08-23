@@ -52,7 +52,7 @@ var (
 	DragonSlayer            Achievement = Achievement{Name: "Dragon Slayer"}
 	WarLeagueLegend         Achievement = Achievement{Name: "War League Legend"}
 	KeepYourAccountSafeSCID Achievement = Achievement{Name: "Keep Your Account Safe!", Info: "Connect your account to Supercell ID for safe keeping."}
-	WellSeasoned            Achievement = Achievement{Name: "Season Challenges"}
+	WellSeasoned            Achievement = Achievement{Name: "Well Seasoned"}
 	ShatteredAndScattered   Achievement = Achievement{Name: "Shattered and Scattered"}
 	NotSoEasyThisTime       Achievement = Achievement{Name: "Not So Easy This Time"}
 	BustThis                Achievement = Achievement{Name: "Bust This"}

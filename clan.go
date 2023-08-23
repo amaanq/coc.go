@@ -1,18 +1,15 @@
 package coc
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
 type Clan struct {
-	MemberList             *[]ClanMember `json:"memberList"`
-	WarTies                *int          `json:"warTies"`
-	Description            *string       `json:"description"`
-	Location               *Location     `json:"location"`
-	WarLosses              *int          `json:"warLosses"`
-	ChatLanguage           *ChatLanguage `json:"chatLanguage"`
-	ClanCapital            *ClanCapital  `json:"clanCapital"`
+	MemberList             []ClanMember `json:"memberList"`
+	WarTies                int          `json:"warTies"`
+	Description            string       `json:"description"`
+	Location               Location     `json:"location"`
+	WarLosses              int          `json:"warLosses"`
+	ChatLanguage           ChatLanguage `json:"chatLanguage"`
+	ClanCapital            ClanCapital  `json:"clanCapital"`
 	WarLeague              WarLeague     `json:"warLeague"`
 	BadgeURLs              IconURLs      `json:"badgeUrls"`
 	Tag                    string        `json:"tag"`
@@ -33,15 +30,15 @@ type Clan struct {
 }
 
 func (c *Clan) GameLink() string {
-	return fmt.Sprintf("https://link.clashofclans.com/en?action=OpenClanProfile&tag=%s", strings.ReplaceAll(c.Tag, "#", ""))
+	return fmt.Sprintf("https://link.clashofclans.com/en?action=OpenClanProfile&tag=%s", c.Tag[1:])
 }
 
 func (c *Clan) ClashOfStatsLink() string {
-	return fmt.Sprintf("https://www.clashofstats.com/clans/%s/summary", strings.ReplaceAll(c.Tag, "#", ""))
+	return fmt.Sprintf("https://www.clashofstats.com/clans/%s/summary", c.Tag[1:])
 }
 
 func (c *Clan) ChocolateClashLink() string {
-	return fmt.Sprintf("https://cc.chocolateclash.com/cc_n/clan.php?tag=%s", strings.ReplaceAll(c.Tag, "#", ""))
+	return fmt.Sprintf("https://cc.chocolateclash.com/cc_n/clan.php?tag=%s", c.Tag[1:])
 }
 
 type Privacy string
@@ -192,8 +189,8 @@ func (r Role) IsLeader() bool {
 }
 
 type ClanCapital struct {
-	CapitalHallLevel *int        `json:"capitalHallLevel"`
-	Districts        *[]District `json:"districts"`
+	CapitalHallLevel int        `json:"capitalHallLevel"`
+	Districts        []District `json:"districts"`
 }
 
 type District struct {
