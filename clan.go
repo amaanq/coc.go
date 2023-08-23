@@ -6,13 +6,13 @@ import (
 )
 
 type Clan struct {
-	MemberList             *[]ClanMember `json:"memberList"`
-	WarTies                *int          `json:"warTies"`
-	Description            *string       `json:"description"`
-	Location               *Location     `json:"location"`
-	WarLosses              *int          `json:"warLosses"`
-	ChatLanguage           *ChatLanguage `json:"chatLanguage"`
-	ClanCapital            *ClanCapital  `json:"clanCapital"`
+	MemberList             []ClanMember `json:"memberList"`
+	WarTies                int          `json:"warTies"`
+	Description            string       `json:"description"`
+	Location               Location     `json:"location"`
+	WarLosses              int          `json:"warLosses"`
+	ChatLanguage           ChatLanguage `json:"chatLanguage"`
+	ClanCapital            ClanCapital  `json:"clanCapital"`
 	WarLeague              WarLeague     `json:"warLeague"`
 	BadgeURLs              IconURLs      `json:"badgeUrls"`
 	Tag                    string        `json:"tag"`
@@ -192,8 +192,8 @@ func (r Role) IsLeader() bool {
 }
 
 type ClanCapital struct {
-	CapitalHallLevel *int        `json:"capitalHallLevel"`
-	Districts        *[]District `json:"districts"`
+	CapitalHallLevel int        `json:"capitalHallLevel"`
+	Districts        []District `json:"districts"`
 }
 
 type District struct {
