@@ -1,6 +1,6 @@
-module github.com/amaanq/coc.go
+module https://github.com/antonschnitzer/coc.go
 
-go 1.18
+go 1.21
 
 require (
 	github.com/go-resty/resty/v2 v2.7.0
